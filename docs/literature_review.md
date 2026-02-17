@@ -187,6 +187,23 @@ The NBFI segment of FX swaps has tripled since 2009. This creates a
 transmission belt for US monetary policy: rate changes alter yield-curve
 shapes, which alter hedging demand, which alter cross-border portfolio flows.
 
+**Currency centrality and equity-FX transmission** (Rey, Stavrakeva & Tang
+2024): Exchange rates can be decomposed into "equity net currency supplies"
+— local stock market capitalisation minus foreign equity holdings denominated
+in investors' currencies. This decomposition explains ~95% of monthly FX
+variation vs the USD and ~98% vs the EUR, showing that equity portfolio
+rebalancing *drives* exchange rates rather than the reverse. The USD occupies
+a uniquely central position in this network, transmitting US risk aversion
+and macroeconomic news to every other currency. Combined with Nenova et al.
+(2025), this implies a full contagion chain: equity shocks → FX movements
+(via currency centrality) → FX hedging cost changes for NBFIs (via CIP
+deviations) → cross-border bond flow reversals → feedback to asset prices.
+Critically, yield curve movements partially offset FX-driven hedging cost
+changes in normal times (self-stabilising), but during stress all forces
+reinforce — USD appreciation, curve flattening, and CIP blowouts occur
+simultaneously — creating nonlinear amplification detectable only through
+quantile methods.
+
 These flows are *more* procyclical than bank lending because:
 1. Fund flows respond to past returns (Coval & Stafford 2007).
 2. Benchmark-driven investment creates herding (Raddatz & Schmukler 2012).
@@ -271,3 +288,4 @@ Build a quarterly panel of:
 28. Federal Reserve (2025). Shifting dynamics in bank funding of NBFIs: The rise of credit lines. *FEDS Notes*, July 2025.
 29. FSB (2025). *Leverage in Nonbank Financial Intermediation: Final Report*. July 2025.
 30. EBA (2025). *EU/EEA Banks' Interconnections with NBFIs and Private Credit*.
+31. Rey, H., Stavrakeva, V., & Tang, J. (2024). Currency centrality in equity markets, exchange rates and global financial cycles. *NBER Working Paper* No. 33003.
