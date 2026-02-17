@@ -6,3 +6,9 @@ __pycache__/
 dist/
 build/
 .env
+data/processed/*.csv
+data/raw/*.csv
+data/external/*.csv
+output/figures/*.png
+output/tables/*.csv
+output/results/*.csv
