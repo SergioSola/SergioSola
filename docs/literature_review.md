@@ -2,8 +2,12 @@
 
 ## 1. Non-Bank Financial Intermediation: Scope and Growth
 
-Non-bank financial intermediaries (NBFIs) now account for roughly half of global
-financial assets (FSB 2023). The sector includes:
+Non-bank financial intermediaries (NBFIs) now account for **51% of global
+financial assets** — $256.8 trillion as of end-2024 (FSB 2025), up from
+roughly $67 trillion in 2004. The "narrow measure" of NBFIs engaged in
+bank-like credit intermediation reached $76.3 trillion (+12% in 2024),
+with run-susceptible collective investment vehicles (EF1) accounting for
+76% of this total and growing 15% year-on-year. The sector includes:
 
 - **Investment funds** (mutual funds, ETFs): Offer liquidity transformation by
   providing daily redemptions against illiquid portfolios (Goldstein, Jiang &
@@ -22,12 +26,14 @@ financial assets (FSB 2023). The sector includes:
   valuation and contagion risks.
 
 Key references:
-- FSB (2023), *Global Monitoring Report on Non-Bank Financial Intermediation*.
+- FSB (2024, 2025), *Global Monitoring Report on Non-Bank Financial
+  Intermediation*.
 - Claessens, Pozsar, Ratnovski & Singh (2012), "Shadow Banking: Economics and
   Policy," IMF Staff Discussion Note.
 - Stein (2012), "Monetary Policy as Financial-Stability Regulation," QJE.
 - Pozsar, Adrian, Ashcraft & Boesky (2013), "Shadow Banking," FRBNY Economic
   Policy Review.
+- FSB (2025), *Leverage in Nonbank Financial Intermediation: Final Report*.
 
 ## 2. Bank–NBFI Interlinkages: Channels and Evidence
 
@@ -52,12 +58,34 @@ Banks and non-banks are connected through multiple channels:
   (SIVs). Implicit guarantees create step-in risk (Acharya, Schnabl & Suarez
   2013).
 
-### 2.4 Empirical evidence
+### 2.4 FX derivatives as hidden connective tissue
+- Nenova, Schrimpf & Shin (BIS WP 1273, 2025) show that FX swaps and
+  forwards — $111 trillion outstanding — are the primary mechanism enabling
+  cross-border bond investments by NBFIs. Non-US banks carry $39 trillion
+  in off-balance-sheet dollar obligations ("missing debt") through these
+  instruments. The NBFI segment of FX swaps has tripled since 2009.
+  Synthetic leverage ratios (notional/market value) reached ~31x in 2022.
+
+### 2.5 Empirical evidence
 - Abad, Aldasoro, Aymanns, D'Errico, Fache Rousová, Hoffmann, Hüser,
   Langfield, Neychev & Roukny (2022) map the euro-area OTC derivatives network
   and show that banks are central nodes linking different NBFI types.
 - Aldasoro, Huang & Kemp (2020) use BIS data to show cross-border bank
   lending to NBFIs has grown faster than bank-to-bank lending since 2008.
+- ECB-ESRB (2026) documents EUR 1.66 trillion in identifiable bank-NBFI
+  exposures in the euro area, of which EUR 432 billion (26%) involves
+  leveraged firms. Exposures are highly concentrated: the top 5 G-SIBs
+  account for ~65% of repo borrowing from NBFIs and ~80% of reverse repo
+  claims. NBFI entities provide ~15% of euro area bank funding, 60% of
+  which is short-term.
+- BCBS d598 (2025) identifies four stylized stress scenarios: (1) NBFI
+  stress causing credit/liquidity losses to banks, (2) NBFI failure
+  destabilizing parent banking groups, (3) NBFIs ceasing to absorb bank
+  risk, and (4) NBFIs withdrawing funding from banks.
+- Federal Reserve (2025) documents that US bank credit lines to NBFIs
+  more than doubled since 2012 to ~$0.6 trillion, while on-balance-sheet
+  funding declined — representing a structural shift to contingent
+  liabilities that create simultaneous drawdown risk during stress.
 
 ## 3. Systemic Risk: Theory and Measurement
 
@@ -147,11 +175,27 @@ works through the same VaR-constraint mechanism:
   (Cerutti, Claessens & Puy 2019).
 - CLO managers and direct-lending funds have global portfolios.
 - Hedge funds arbitrage cross-border yield differentials.
+- Foreign private-sector lenders (mainly NBFIs) now hold more than half of
+  all foreign US Treasury holdings, outpacing foreign official holders
+  (Nenova, Schrimpf & Shin 2025).
+
+**The FX derivative channel** (Nenova, Schrimpf & Shin 2025): FX swaps and
+forwards ($111 trillion outstanding) are the connective tissue enabling
+cross-border bond investments. A steeper US yield curve drives greater FX
+swap usage, as foreign investors hedge investments in higher-return USD bonds.
+The NBFI segment of FX swaps has tripled since 2009. This creates a
+transmission belt for US monetary policy: rate changes alter yield-curve
+shapes, which alter hedging demand, which alter cross-border portfolio flows.
 
 These flows are *more* procyclical than bank lending because:
 1. Fund flows respond to past returns (Coval & Stafford 2007).
 2. Benchmark-driven investment creates herding (Raddatz & Schmukler 2012).
 3. Swing pricing and redemption gates are imperfect tools against run dynamics.
+4. FX derivatives activity contracts procyclically during tightening,
+   reducing cross-border intermediation capacity (BIS WP 1273).
+5. The August 2024 yen carry-trade unwind demonstrated how domestic shocks
+   transmit globally through leveraged FX positions — cross-border yen loans
+   to non-banks grew 75% between 2022 and 2024.
 
 ### 4.3 Amplification Hypothesis
 
@@ -219,3 +263,11 @@ Build a quarterly panel of:
 20. Miranda-Agrippino, S., & Rey, H. (2020). US monetary policy and the global financial cycle. *Review of Economic Studies*, 87(6), 2754–2776.
 21. Rey, H. (2015). Dilemma not trilemma: The global financial cycle and monetary policy independence. *NBER Working Paper* 21162.
 22. Stein, J. C. (2012). Monetary policy as financial-stability regulation. *Quarterly Journal of Economics*, 127(1), 57–95.
+23. FSB (2024). *Global Monitoring Report on Non-Bank Financial Intermediation 2024*. December 2024.
+24. FSB (2025). *Global Monitoring Report on Nonbank Financial Intermediation 2025*. December 2025.
+25. ECB-ESRB (2026). *Financial Stability Risks from Linkages Between Banks and the Non-Bank Financial Intermediation Sector*. February 2026.
+26. BCBS (2025). *Banks' Interconnections with Non-Bank Financial Intermediaries*. d598, July 2025.
+27. Nenova, T., Schrimpf, A., & Shin, H. S. (2025). Global portfolio investments and FX derivatives. *BIS Working Paper* No. 1273, June 2025.
+28. Federal Reserve (2025). Shifting dynamics in bank funding of NBFIs: The rise of credit lines. *FEDS Notes*, July 2025.
+29. FSB (2025). *Leverage in Nonbank Financial Intermediation: Final Report*. July 2025.
+30. EBA (2025). *EU/EEA Banks' Interconnections with NBFIs and Private Credit*.

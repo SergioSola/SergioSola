@@ -271,11 +271,11 @@ def _generalized_fevd(
             Rows are normalized to sum to 1.
     """
     n = var_result.neqs
-    sigma = var_result.sigma_u  # residual covariance matrix
+    sigma = np.asarray(var_result.sigma_u)  # residual covariance matrix
     sigma_diag = np.diag(sigma)
 
     # MA coefficient matrices (impulse responses)
-    ma_coefs = var_result.ma_rep(maxn=h)  # shape (h+1, n, n)
+    ma_coefs = np.asarray(var_result.ma_rep(maxn=h))  # shape (h+1, n, n)
 
     theta = np.zeros((n, n))
     for i in range(n):
