@@ -191,6 +191,32 @@ def build():
     pdf.ni(3,"Shadow leverage amplifies left-tail risk (GaR) but has no effect at the median.")
     pdf.ni(4,"Quantile connectedness confirms asymmetric contagion in bank-NBFI networks.")
 
+    pdf.h2("Data Sources & Sample")
+    ws_d1=[45,55,25,65]
+    pdf.th(["Source","Variables","Freq.","Coverage"],ws_d1)
+    for i,r in enumerate([
+        ("OFR US Repo (SOFR)","Repo volumes, rates, counterparty","Daily","2014-present"),
+        ("ECB MMSR","Euro repo volumes by counterparty","Daily","2016-present"),
+        ("DTCC Swap Data","IRS/CDS notional, counterparty type","Weekly","2013-present"),
+        ("FSB Global Monitoring","NBFI sector AUM, leverage proxies","Annual","2002-present"),
+        ("BIS Locational Banking","Cross-border bank-NBFI exposures","Quarterly","2000-present"),
+        ("FRED / ECB SDW","GDP, financial conditions, VIX, spreads","Mixed","2000-present"),
+    ]): pdf.tr(r,ws_d1,s=i%2==1)
+    pdf.ln(2)
+    pdf.p("Sample period: 2013Q1-2024Q4 (post-DTCC reporting). Extended to 2000 for GaR regressions "
+        "using FSB annual data. Key stress episodes for validation: Taper Tantrum (May 2013), "
+        "China devaluation (Aug 2015), Gilt crisis (Sep 2022), COVID-19 (Mar 2020), SVB (Mar 2023).")
+
+    pdf.h2("Literature Positioning")
+    pdf.ni(1,"NBFI leverage measurement: Extends Jiang, Matvos, Piskorski & Seru (2024) on hidden bank losses to the NBFI sector. Complements FSB (2023) Global Monitoring with market-data approach.")
+    pdf.ni(2,"Spectral network measures: Builds on Acemoglu et al. (2015) and Greenwood, Landier & Thesmar (2015). Adapts spectral radius to bipartite bank-NBFI setting.")
+    pdf.ni(3,"Growth-at-Risk: Extends Adrian et al. (2019) by adding NBFI-specific predictors (hidden leverage) to financial conditions -> GDP GaR framework.")
+
+    pdf.h2("Identification & Robustness")
+    pdf.b("Endogeneity of leverage: lagged HLI values, Granger causality, IV with regulatory threshold dummies (margin call triggers).")
+    pdf.b("Measurement error: delta-equivalence factor calibrated from BIS survey; robustness across delta in [0.02, 0.10].")
+    pdf.b("Network construction sensitivity: tested across alternative edge-weighting (gross vs net, bilateral vs multilateral netting).")
+
     # ── PROJECT 2 ──
     pdf.add_page()
     pdf.pbox(2,"Mapping the Channels","Network Analysis of Non-Bank Amplification in Monetary Policy Transmission")
@@ -238,6 +264,35 @@ def build():
     pdf.ni(3,"Location-scale: NBFI leverage fattens both tails (variance effect), not just shifts the mean.")
     pdf.ni(4,"Resolution of the 2022-23 resilience puzzle via network topology analysis.")
 
+    pdf.h2("Data Sources & Sample")
+    ws_d2=[45,55,25,65]
+    pdf.th(["Source","Variables","Freq.","Coverage"],ws_d2)
+    for i,r in enumerate([
+        ("Flow of Funds (Fed Z.1)","Sector assets, liabilities, leverage","Quarterly","1980-present"),
+        ("ECB Inv. Fund Stats","EU fund AUM, flows, leverage by type","Quarterly","2009-present"),
+        ("EPFR Global","Fund flows by type, country, asset class","Monthly","2000-present"),
+        ("Bloomberg / Refinitiv","Sector return indices (HF, MMF, etc.)","Daily","2000-present"),
+        ("BIS Credit Statistics","Credit to private sector, spreads","Quarterly","1999-present"),
+        ("FRED","Fed funds rate, term spreads, GDP, CPI","Mixed","1960-present"),
+        ("Banerjee et al. (2025)","BIS Bulletin 116 replication data","Quarterly","2000-2024"),
+    ]): pdf.tr(r,ws_d2,s=i%2==1)
+    pdf.ln(2)
+    pdf.p("Sample: 2000Q1-2024Q4 for most modules. DCC-GARCH uses daily data. Sub-sector classification: "
+        "hedge funds, MMFs, bond mutual funds, equity mutual funds, ETFs, insurance, pension funds, "
+        "finance companies, securitisation vehicles.")
+
+    pdf.h2("Literature Positioning")
+    pdf.ni(1,"MP & financial intermediaries: Extends Adrian & Shin (2010, 2014) VaR-constraint channel from banks to NBFIs.")
+    pdf.ni(2,"NBFI amplification: Builds on Banerjee et al. (2025). Sub-sector decomposition and quantile methods address their wide confidence bands.")
+    pdf.ni(3,"Quantile VAR: Adapts Ando et al. (2022) from cross-country to cross-sector. First quantile connectedness for MP transmission.")
+    pdf.ni(4,"Location-scale: Extends Adrian et al. (2019) GaR by modelling the scale (variance) channel separately.")
+
+    pdf.h2("Identification & Robustness")
+    pdf.b("MP shock identification: high-frequency (Gurkaynak et al. 2005); robustness with Romer & Romer (2004), Jarocinski & Karadi (2020).")
+    pdf.b("NBFI leverage endogeneity: instrumented with lagged regulatory capital ratios of connected banks.")
+    pdf.b("Quantile VAR lag selection: BIC-optimal at each quantile; robustness across p in {1, 2, 4}.")
+    pdf.b("Small-sample inference: bootstrap CIs (1000 replications) for quantile IRFs and connectedness.")
+
     # ── PROJECT 3 ──
     pdf.add_page()
     pdf.pbox(3,"Contagion Across Borders","How NBFI Stress in One Jurisdiction Spills Over via the Global Financial Cycle")
@@ -280,6 +335,35 @@ def build():
     pdf.ni(3,"NBFI penetration amplifies GFC transmission (robust to IV with US MP shocks).")
     pdf.ni(4,"Location-scale: NBFI flows fatten the tails of EME return distributions.")
 
+    pdf.h2("Data Sources & Sample")
+    ws_d3=[45,55,25,65]
+    pdf.th(["Source","Variables","Freq.","Coverage"],ws_d3)
+    for i,r in enumerate([
+        ("BIS Locational Banking","Cross-border claims by sector/country","Quarterly","2000-present"),
+        ("EPFR Global","Cross-border fund flows by destination","Monthly","2005-present"),
+        ("IMF CPIS","Portfolio positions by country pair","Annual","2001-present"),
+        ("BIS OTC Derivatives","FX swap/forward by currency","Semiannual","2004-present"),
+        ("Bloomberg","CIP basis, VIX, equity indices","Daily","2000-present"),
+        ("Miranda-Agrippino & Rey","Global Financial Cycle factor","Monthly","1990-present"),
+        ("FSB Global Monitoring","NBFI penetration ratio by country","Annual","2002-present"),
+    ]): pdf.tr(r,ws_d3,s=i%2==1)
+    pdf.ln(2)
+    pdf.p("Sample: 2005Q1-2024Q4 for cross-country quantile connectedness. Country coverage: G20 + "
+        "financial centres (US, UK, EA, JP, CH, AU, CA, KR, SG, HK, BR, MX, IN, ZA, TR, RU, CN). "
+        "Separate EME sub-sample for GFC amplification tests.")
+
+    pdf.h2("Literature Positioning")
+    pdf.ni(1,"Global financial cycle: Extends Rey (2013), Miranda-Agrippino & Rey (2020). First causal evidence of NBFI amplification of GFC via IV.")
+    pdf.ni(2,"Cross-border contagion: Complements Forbes & Warnock (2012), Broner et al. (2013). Adds NBFI decomposition and quantile methods.")
+    pdf.ni(3,"Dollar funding: Builds on Avdjiev et al. (2019), Eguren-Martin et al. (2024). Tests nonlinear transmission via quantile regression.")
+    pdf.ni(4,"Network contagion: Eisenberg & Noe (2001) + Kyle (1985) price impact, extending Cont & Schaanning (2017) to cross-border setting.")
+
+    pdf.h2("Identification & Robustness")
+    pdf.b("IV for GFC factor: US MP shocks (Jarocinski & Karadi 2020), addressing reverse causality.")
+    pdf.b("NBFI penetration endogeneity: instrumented with legal origin (La Porta et al. 1998) and lagged pension reform dummies.")
+    pdf.b("Alternative connectedness: Barunik & Krehlik (2018) frequency-domain as robustness check.")
+    pdf.b("EME vs AE heterogeneity: full interaction models allowing different coefficients.")
+
     # ── PROJECT 4 ──
     pdf.add_page()
     pdf.pbox(4,"FX Hedging as a Contagion Channel","How NBFI Currency Risk Management Transmits Global Financial Shocks")
@@ -321,6 +405,35 @@ def build():
     pdf.ni(3,"First application of quantile connectedness to the FX hedging transmission chain.")
     pdf.ni(4,"Evidence that NBFI FX hedging maturity mismatch (3-month swaps / 10-year bonds) creates systemic rollover risk.")
 
+    pdf.h2("Data Sources & Sample")
+    ws_d4=[45,55,25,65]
+    pdf.th(["Source","Variables","Freq.","Coverage"],ws_d4)
+    for i,r in enumerate([
+        ("BIS OTC Derivatives","FX swap/forward by currency & sector","Semiannual","2004-present"),
+        ("Bloomberg","Cross-currency basis (3M,1Y,5Y), equities","Daily","2000-present"),
+        ("Refinitiv","Govt bond yields (2Y,5Y,10Y), 20+ countries","Daily","2000-present"),
+        ("EPFR Global","Cross-border bond fund flows by country","Monthly","2005-present"),
+        ("IMF CPIS","Cross-border bond holdings by pair","Annual","2001-present"),
+        ("Rey et al. (2024)","Currency centrality, replication data","Monthly","1999-2023"),
+        ("Nenova et al. (2025)","FX derivatives & NBFI hedging data","Quarterly","2010-2024"),
+    ]): pdf.tr(r,ws_d4,s=i%2==1)
+    pdf.ln(2)
+    pdf.p("Sample: 2005M1-2024M12 for quantile regressions. Currency pairs: G10 majors (USD/EUR, "
+        "USD/JPY, USD/GBP, USD/AUD, USD/CAD, USD/CHF) + key EME pairs (USD/KRW, USD/MXN, "
+        "USD/BRL, USD/ZAR) with liquid CIP basis data.")
+
+    pdf.h2("Literature Positioning")
+    pdf.ni(1,"FX hedging & stability: Integrates Rey et al. (2024) on equity-FX transmission and Nenova et al. (2025) on NBFI hedging. 'Offsetting forces' is our key theoretical contribution.")
+    pdf.ni(2,"CIP deviations: Extends Du et al. (2018), Avdjiev et al. (2019). CIP deviations as systemic risk channel, not just anomaly.")
+    pdf.ni(3,"Delta-CoVaR: Applies Adrian & Brunnermeier (2016) to a transmission mechanism rather than an institution -- methodological novelty.")
+    pdf.ni(4,"Maturity mismatch: Builds on Brunnermeier et al. (2009). NBFI hedging mismatch (3M swaps for 10Y bonds) analogous to bank maturity mismatch.")
+
+    pdf.h2("Identification & Robustness")
+    pdf.b("Offsetting forces: Wald test of beta_4(tau=0.05) = beta_4(tau=0.50) with bootstrap p-values.")
+    pdf.b("CIP basis endogeneity: instrumented with central bank swap line announcements (exogenous supply shocks).")
+    pdf.b("Hedging demand proxy: NBFI cross-border bond holdings (CPIS) x average hedge ratio (BIS survey).")
+    pdf.b("Alternative stress measures: robust to MOVE, TED spread, financial conditions indices replacing VIX.")
+
     # ── COMMON TOOLKIT ──
     pdf.add_page()
     pdf.h1("6. Common Methodological Toolkit")
@@ -359,6 +472,61 @@ def build():
     pdf.box("Common finding: NBFI risks are fundamentally nonlinear. Standard mean-based\n"
         "methods miss tail amplification, asymmetric contagion, and crisis-activated\n"
         "transmission that quantile methods reveal.")
+
+    # ── TIMELINE & DELIVERABLES ──
+    pdf.add_page()
+    pdf.h1("8. Timeline & Deliverables")
+    ws_t=[30,30,35,95]
+    pdf.th(["Phase","Period","Projects","Deliverables"],ws_t)
+    pdf.tr(("Phase 1","Q1-Q2 2026","P1 + P2","Working papers; implied leverage dataset; QVAR estimates"),ws_t)
+    pdf.tr(("Phase 2","Q3-Q4 2026","P3 + P4","Working papers; cross-country connectedness; offsetting forces"),ws_t,s=True)
+    pdf.tr(("Phase 3","Q1 2027","Integration","Synthesis paper linking all projects; unified policy brief"),ws_t)
+    pdf.tr(("Ongoing","Throughout","All","Conference presentations, seminar feedback, revisions"),ws_t,s=True)
+    pdf.ln(2)
+    pdf.p("Sequencing rationale: P1 and P2 proceed in parallel (different data, complementary methods). "
+        "P3 and P4 benefit from P1/P2 outputs but can begin data assembly immediately. The integration "
+        "phase produces the synthesis tying all four dimensions together.")
+
+    # ── POLICY IMPLICATIONS ──
+    pdf.h1("9. Policy Implications")
+    pdf.p("The research programme speaks directly to ongoing regulatory debates:")
+    pdf.ni(1,"NBFI leverage monitoring (P1): The implied leverage measure and HLI provide regulators "
+        "with a prototype tool complementing FSB surveillance. Could inform NBFI leverage reporting "
+        "requirements under the FSB 2023 NBFI roadmap.")
+    pdf.ni(2,"Monetary policy & financial stability (P2): Evidence that NBFI leverage amplifies MP "
+        "transmission in the tails has implications for calibrating tightening cycles. The 2022-23 "
+        "resilience finding suggests post-GFC bank regulation worked but created new NBFI vulnerabilities.")
+    pdf.ni(3,"Cross-border macroprudential coordination (P3): NBFI penetration amplifies GFC "
+        "transmission, supporting arguments for cross-border macroprudential coordination (e.g., "
+        "reciprocity of countercyclical capital buffers for NBFI exposures).")
+    pdf.ni(4,"FX derivatives regulation (P4): NBFI hedging maturity mismatch (3-month swaps for "
+        "10-year bonds) creates systemic rollover risk. Supports longer-tenor hedging requirements "
+        "or margin buffers calibrated to stress scenarios.")
+    pdf.ni(5,"Data gaps (all): All projects highlight inadequate NBFI data. Supports FSB/BIS "
+        "initiatives for enhanced reporting on leverage, counterparty exposures, and cross-border linkages.")
+
+    # ── REFERENCES ──
+    pdf.add_page()
+    pdf.h1("10. References (Selected)")
+    refs = [
+        "Acemoglu, D., Ozdaglar, A. & Tahbaz-Salehi, A. (2015). Systemic risk and stability in financial networks. AER 105(2), 564-608.",
+        "Adrian, T. & Brunnermeier, M.K. (2016). CoVaR. AER 106(7), 1705-1741.",
+        "Adrian, T., Boyarchenko, N. & Giannone, D. (2019). Vulnerable growth. AER 109(4), 1263-1289.",
+        "Adrian, T. & Shin, H.S. (2010). Liquidity and leverage. J. Financial Intermediation 19(3), 418-437.",
+        "Ando, T., Greenwood-Nimmo, M. & Shin, Y. (2022). Quantile connectedness. Management Science 68(4), 2401-2431.",
+        "Avdjiev, S., Du, W., Koch, C. & Shin, H.S. (2019). The dollar, bank leverage, and CIP deviations. AER: Insights 1(2), 193-208.",
+        "Banerjee, R., Hofmann, B., Ng, A. & Pinter, J. (2025). Non-bank financial intermediaries and financial stability. BIS Bulletin 116.",
+        "Du, W., Tepper, A. & Verdelhan, A. (2018). Deviations from CIP. J. Finance 73(3), 915-957.",
+        "Eisenberg, L. & Noe, T.H. (2001). Systemic risk in financial systems. Management Science 47(2), 236-249.",
+        "Forbes, K.J. & Warnock, F.E. (2012). Capital flow waves. J. International Economics 88(2), 235-251.",
+        "Greenwood, R., Landier, A. & Thesmar, D. (2015). Vulnerable banks. JFE 115(3), 471-485.",
+        "Miranda-Agrippino, S. & Rey, H. (2020). US monetary policy and the global financial cycle. REStud 87(6), 2754-2776.",
+        "Nenova, T., Schrimpf, A. & Shin, H.S. (2025). FX derivatives and NBFI hedging. BIS Working Paper.",
+        "Rey, H. (2013). Dilemma not trilemma. Jackson Hole Symposium.",
+        "Rey, H., Stavrakeva, V. & Tang, J. (2024). Currency centrality and the exchange rate channel. Working Paper.",
+    ]
+    for ref in refs:
+        pdf.b(ref, indent=10)
 
     out = "/home/user/SergioSola/reports/research_programme_outline.pdf"
     pdf.output(out)
