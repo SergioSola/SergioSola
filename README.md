@@ -1,8 +1,20 @@
-# Bank–Non-Bank Interlinkages, Systemic Risk, and the Global Financial Cycle
+# Research Repository: Financial Stability, Systemic Risk, and Policy Interactions
+
+This repository contains two research programmes:
+
+1. **Programme I — Bank–NBFI Interlinkages and Systemic Risk:** Empirical analysis
+   of how bank–non-bank interconnections create and propagate systemic risk.
+2. **Programme II — Monetary-Fiscal Interactions:** Structural DSGE modelling of
+   how government debt limits, central bank autonomy, and sovereign risk shape
+   macroeconomic outcomes.
+
+---
+
+# Programme I: Bank–Non-Bank Interlinkages, Systemic Risk, and the Global Financial Cycle
 
 ## Overview
 
-This project analyzes how interconnections between banks and non-bank financial
+This programme analyzes how interconnections between banks and non-bank financial
 intermediaries (NBFIs)—investment funds, pension funds, direct credit firms, hedge
 funds, money market funds, and insurance companies—create and propagate systemic
 risk. It examines three core questions:
@@ -140,6 +152,60 @@ python -m src.models.var_amplification
 
 # Generate all figures and tables
 python -m src.visualization.generate_outputs
+```
+
+---
+
+# Programme II: Monetary-Fiscal Interactions
+
+## Overview
+
+This programme investigates the joint determination of monetary and fiscal policy
+and its consequences for macroeconomic stability, sovereign risk, and the financial
+sector. It employs structural DSGE modelling enriched with banking frictions,
+sovereign debt limits, and open-economy features.
+
+## Projects
+
+| Project | Title | Status |
+|---------|-------|--------|
+| MFI-P1 | Fiscal Dominance and the Policy Mix | In development |
+| MFI-P2 | *To be defined* | Planned |
+| MFI-P3 | *To be defined* | Planned |
+
+### MFI-P1: Fiscal Dominance and the Policy Mix
+
+A medium-scale DSGE model featuring:
+- **Agents:** Households, firms (with default risk), banks, government, central bank, foreign sector
+- **Key mechanism:** Government debt limit → central bank captivity → endogenous risk premia
+- **Banking sector:** Lends to both government and private sector; sovereign stress transmits to corporate credit
+- **Open economy:** Interest rate parity with time-varying foreign risk premium; balance of payments
+- **Policy regimes:** (a) Active monetary / passive fiscal, (b) Passive monetary / active fiscal, (c) Active monetary / active fiscal
+
+See `notebooks/00_monetary_fiscal_overview.ipynb` for the full programme overview
+and `notebooks/mfi_project1_fiscal_dominance/` for the project notebook.
+
+## Repository Structure
+
+```
+├── notebooks/
+│   ├── 00_research_programme_overview.ipynb        # Programme I overview
+│   ├── 00_monetary_fiscal_overview.ipynb            # Programme II overview
+│   ├── project1_shadow_leverage/                    # Programme I projects
+│   ├── project2_mp_transmission/
+│   ├── project3_cross_border/
+│   ├── project4_fx_hedging/
+│   └── mfi_project1_fiscal_dominance/               # Programme II projects
+├── src/
+│   ├── analysis/                                    # Analysis modules (both programmes)
+│   ├── data/                                        # Data loaders (both programmes)
+│   ├── models/                                      # Model implementations
+│   ├── visualization/                               # Plotting
+│   └── utils/                                       # Shared config and helpers
+├── docs/                                            # Literature reviews, stylized facts
+├── tests/                                           # Unit tests
+├── data/                                            # Raw, processed, external data
+└── output/                                          # Figures, tables, results
 ```
 
 ## License

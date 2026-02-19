@@ -49,3 +49,13 @@ SECTOR_LABELS = {
 
 BANK_SECTORS = {"bank"}
 NBFI_SECTORS = set(SECTOR_LABELS.keys()) - BANK_SECTORS
+
+# ── MFI Programme parameters ────────────────────────────────────────────
+# Baseline calibration targets for monetary-fiscal DSGE model
+MFI_DEBT_GDP_SS = 0.60          # Steady-state debt-to-GDP (annual)
+MFI_DEBT_LIMIT = 1.20           # Fiscal limit: debt-to-GDP (annual)
+MFI_GOV_SPENDING_GDP = 0.20     # Government spending / GDP
+MFI_TAYLOR_PHI_PI = 1.50        # Taylor rule: inflation response (active)
+MFI_TAYLOR_PHI_PI_CAP = 0.50    # Captive CB: inflation response (passive)
+MFI_SAMPLE_START = "1990-01-01"
+MFI_SAMPLE_END = "2024-12-31"
