@@ -239,8 +239,40 @@ def build():
 
     pdf.h2("Empirical Strategy")
     pdf.h3("Module 1: VaR-Constraint Channel (Adrian & Shin 2010, 2014)")
-    pdf.p("Procyclicality of leverage by NBFI sub-sector. Fire-sale simulation: bank-only "
-        "vs bank+NBFI system response to a -5% shock.")
+    pdf.p("Economic logic: VaR-constrained intermediaries expand balance sheets when asset prices "
+        "rise (measured risk falls, creating unused capacity) and contract when prices fall (VaR "
+        "breached, forcing asset sales). This makes leverage procyclical -- rising with assets in "
+        "booms, falling in busts -- and generates fire-sale spirals. Adrian & Shin (2010, 2014) "
+        "document this for US broker-dealers. We extend it to the full NBFI universe.")
+    pdf.p("What we test: (1) Is leverage procyclical for each NBFI sub-sector, and is the "
+        "procyclicality coefficient larger for leveraged sub-sectors (HFs) than liability-driven "
+        "ones (pensions)? (2) Does adding NBFIs to a fire-sale simulation amplify losses?")
+    pdf.h3("Specification 1: Procyclicality panel")
+    pdf.box("    D log(Lev_{s,t}) = alpha_s + beta_s * D log(A_{s,t}) + gamma * X_{s,t-1} + delta_t + eps\n\n"
+        "Unit of observation: NBFI sub-sector s in quarter t.\n\n"
+        "Variables:\n"
+        "  Lev_{s,t} = A_{s,t} / E_{s,t}  (total assets / equity, from Flow of Funds Z.1)\n"
+        "  A_{s,t}   = total assets of sub-sector s at quarter t\n"
+        "  X_{s,t-1} = lagged controls: VIX, term spread (10Y-2Y), credit spread, GDP growth\n"
+        "  alpha_s   = sub-sector fixed effects (absorb business model differences)\n"
+        "  delta_t   = time fixed effects (absorb common macro shocks)\n"
+        "  beta_s    = sub-sector-specific procyclicality coefficient (key parameter)\n\n"
+        "Expected ranking (H1): beta_HF > beta_LevFunds > beta_BondMF > beta_MMF > beta_IC ~ beta_PF ~ 0")
+    pdf.h3("Specification 2: Stress interaction")
+    pdf.box("    D log(Lev_{s,t}) = alpha_s + beta_1 * D log(A_{s,t})\n"
+        "                        + beta_2 * D log(A_{s,t}) x Stress_t\n"
+        "                        + gamma * X_{s,t-1} + delta_t + eps\n\n"
+        "Stress_t = dummy (VIX > 75th pctile or NBER recession).\n"
+        "If beta_2 > 0: procyclicality intensifies during stress.")
+    pdf.h3("Specification 3: Fire-sale simulation")
+    pdf.p("Greenwood, Landier & Thesmar (2015) model extended to include NBFI sub-sectors:")
+    pdf.b("Initial shock: -5% across all asset classes.")
+    pdf.b("Mark-to-market losses proportional to portfolio weights and leverage.")
+    pdf.b("Forced selling: sectors with beta_s > 0 sell to restore target leverage.")
+    pdf.b("Price impact: Kyle (1985) lambda. Iterate until convergence (< 0.01%).")
+    pdf.b("Amplification ratio = Total losses (bank+NBFI) / Total losses (bank-only).")
+    pdf.p("Standard errors: clustered at sub-sector level (9 clusters). "
+        "Robustness: two-way clustering (sub-sector x year).")
     pdf.h3("Module 2: DCC-GARCH Dynamic Correlations (Engle 2002)")
     pdf.p("Time-varying correlations between bank and NBFI sector returns. Tracks "
         "correlation spikes during stress for bank-HF, bank-MMF, bank-insurance pairs.")
