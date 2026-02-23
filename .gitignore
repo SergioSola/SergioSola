@@ -12,3 +12,12 @@ data/external/*.csv
 output/figures/*.png
 output/tables/*.csv
 output/results/*.csv
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
