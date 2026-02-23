@@ -1,0 +1,2328 @@
+\documentclass[11pt,a4paper]{article}
+
+% Encoding and fonts
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% Page geometry
+\usepackage[margin=2.5cm]{geometry}
+
+% Math
+\usepackage{amsmath,amssymb,amsfonts}
+
+% Tables
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+
+% Graphics and colors
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+
+% Hyperlinks
+\usepackage[colorlinks=true,linkcolor=NavyBlue,urlcolor=NavyBlue,citecolor=NavyBlue]{hyperref}
+
+% Code / verbatim
+\usepackage{fancyvrb}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{gray!5},
+  xleftmargin=1em,
+  framexleftmargin=0.5em
+}
+
+% Spacing
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{parskip}
+
+% Headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\nouppercase{\leftmark}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Title
+\title{\LARGE\textbf{Research Programme Overview}\\[0.5em]
+       \Large Non-Bank Financial Intermediation and Systemic Risk}
+\author{Sergio Sola}
+\date{February 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent This document provides a detailed research cookbook for a four-project
+programme studying how non-bank financial intermediation (NBFI) creates, amplifies,
+and transmits systemic risk. For each project, every analytical module specifies:
+(1)~variables---exact names, definitions, sources, frequency, and level of aggregation;
+(2)~model specification---full equation with every term defined;
+(3)~estimation---method, software, key parameters;
+(4)~output---what you get and how to interpret it; and
+(5)~module linkages---how each module's output feeds into the next.
+The unifying theme is that NBFI risks are fundamentally nonlinear: largely invisible
+in normal times but activating powerfully during stress.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+
+\section{Research Programme Overview: Non-Bank Financial Intermediation and Systemic Risk}
+
+\textbf{Author:} Sergio Sola | February 2026
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+This document is a \textbf{detailed research cookbook} for the four-project programme. For each project, every analytical module specifies:
+
+\begin{enumerate}
+\item \textbf{Variables} --- exact names, definitions, sources, frequency, and level of aggregation
+\item \textbf{Model specification} --- full equation with every term defined
+\item \textbf{Estimation} --- method, software, key parameters (lags, quantiles, etc.)
+\item \textbf{Output} --- what you get and how to interpret it
+\item \textbf{Module linkages} --- how each module's output feeds into the next
+
+\end{enumerate}
+\textbf{Unifying theme:} NBFI risks are fundamentally nonlinear --- largely invisible in normal
+times but activating powerfully during stress. Standard mean-based methods miss these
+dynamics. All four projects employ quantile-specific methods to capture tail amplification
+and asymmetric contagion.
+
+
+{\small
+\begin{longtable}{|l|l|l|}
+\hline
+\textbf{Project} & \textbf{Title} & \textbf{Focus} \\
+\hline
+\endhead
+P1 & The Shadow Leverage Map & Hidden NBFI leverage from repo \& derivatives \\
+\hline
+P2 & Mapping the Channels & NBFI amplification of monetary policy transmission \\
+\hline
+P3 & Contagion Across Borders & Cross-border NBFI spillovers via the GFC \\
+\hline
+P4 & FX Hedging as a Contagion Channel & FX hedging costs as a transmission mechanism \\
+\hline
+\end{longtable}
+}
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsection{How to Read This Document}
+
+Each project is organised into \textbf{numbered modules}. Every module follows this template:
+
+
+\begin{quote}
+\itshape
+\textbf{Purpose} --- what economic question this module answers \\
+
+\textbf{Unit of observation} --- e.g., ''sub-sector \$s\$ $\times$ quarter \$t\$'' \\
+
+\textbf{Input variables} --- table listing every variable entering the model, its definition, source, frequency, and level of aggregation \\
+
+\textbf{Model specification} --- the full equation with all terms defined \\
+
+\textbf{Estimation details} --- how the model is estimated (OLS, quantile regression, MLE, simulation, etc.), plus key parameters \\
+
+\textbf{Output} --- what the function returns and how to interpret the results \\
+
+\textbf{$\rightarrow$ Link to next module} --- what this module's output feeds into \\
+\end{quote}
+
+At the end of each project there is a \textbf{Module Linkage Map} showing the pipeline flow.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\section{Project 1: The Shadow Leverage Map}
+
+\textbf{Subtitle:} Tracing Hidden Non-Bank Exposures Through Repo and Derivatives Data
+
+
+\subsection{Motivation}
+
+NBFIs now account for nearly half of global financial assets, yet their leverage
+remains largely invisible to regulators. Unlike banks, NBFIs are not subject to
+standardised capital or leverage ratio disclosure, creating a systemic blind spot.
+This project develops a \textit{Shadow Leverage Map} --- a prototype analytical framework
+that reverse-engineers the leverage embedded in NBFI balance sheets using publicly
+available market data from repo markets (OFR, ECB MMSR), derivatives reporting
+(DTCC), and FSB monitoring data.
+
+
+\subsection{Research Questions}
+
+\textbf{RQ1.} Can NBFI leverage be reverse-engineered from observable market data
+(repo volumes, derivatives notional, equity proxies)?
+
+\textbf{RQ2.} How are banks and NBFIs interconnected through repo and derivatives
+exposures, and how do these interconnections evolve over time and during stress?
+
+\textbf{RQ3.} Can a spectral measure of network structure --- the Hidden Leverage Index
+(HLI), based on the largest eigenvalue of the exposure-weighted adjacency matrix
+--- serve as a predictor of systemic events?
+
+\textbf{RQ4.} Does hidden leverage amplify tail risk during stress? Is the bank-NBFI
+system more interconnected in the tails (quantile connectedness), and does high
+hidden leverage predict worse left-tail growth (Growth-at-Risk)?
+
+
+\subsection{Empirical Strategy}
+
+Project 1 has \textbf{four modules} that build on each other in sequence:
+
+
+\begin{verbatim}
+Module 1 (Implied Leverage)  --→  Module 2 (Bipartite Network)  --→  Module 3 (HLI Spectral Index)  --→  Module 4 (Tail Risk)
+         ↓                                  ↓                                  ↓                                ↓
+   Leverage ratios              Exposure-weighted               Scalar HLI_t time              HLI predicts left-tail
+   per NBFI sector              adjacency matrix W_t            series (leading              GDP growth (GaR) and
+   per quarter                  evolving quarterly              indicator)                    quantile connectedness
+\end{verbatim}
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 1: Implied Leverage Estimation}
+
+\textbf{Purpose}: Reverse-engineer the economic leverage embedded in NBFI balance sheets --- leverage that regulatory ratios do not capture --- using observable market data.
+
+\textbf{Unit of observation}: NBFI sub-sector \$s\$ $\times$ quarter \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Equity proxy & $E_{s,t}$ & Total net asset value (equity) of NBFI sub-sector \$s\$ & FSB Global Monitoring Report; Fed Z.1 Flow of Funds & Annual (FSB); Quarterly (Z.1) & Sub-sector aggregate \\
+\hline
+Repo borrowing & $R_{s,t}$ & Total repo borrowing by sub-sector \$s\$ & OFR US Repo (SOFR data); ECB MMSR & Daily (aggregated to quarterly) & Sub-sector aggregate \\
+\hline
+Derivatives notional & $D_{s,t}$ & Gross derivatives notional outstanding for sub-sector \$s\$ & DTCC Swap Data Repository & Weekly (aggregated to quarterly) & Sub-sector aggregate \\
+\hline
+Delta-equivalence factor & $\delta$ & Scaling factor converting gross notional to economic exposure & Calibrated from BIS Triennial Survey & Fixed parameter & Global \\
+\hline
+\end{longtable}
+}
+
+\textbf{Sub-sectors} $s \in \{$hedge funds, MMFs, bond mutual funds, equity mutual funds, ETFs, broker-dealers, insurance companies, pension funds, finance companies$\}$.
+
+\textbf{Model specification}:
+
+\[\text{Implied Leverage}_{s,t} = \frac{E_{s,t} + R_{s,t} + \delta \cdot D_{s,t}}{E_{s,t}}\]
+
+\textbf{Worked example}: A hedge fund sector with $E = \$10$B equity, $R = \$40$B repo borrowing, and $D = \$500$B IRS notional (with $\delta = 0.05$) has implied leverage of $(10 + 40 + 0.05 \times 500)/10 = 7.5\times$.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item This is a \textit{constructed measure}, not an econometric model --- no estimation required.
+\item The key calibration choice is $\delta$. Baseline: $\delta = 0.05$ (from BIS survey data on delta-equivalence of IRS portfolios). Robustness: $\delta \in [0.02, 0.10]$.
+\item For sub-sectors where direct repo data is unavailable, repo borrowing is proxied by total short-term funding minus equity, using Flow of Funds (Z.1) liability breakdowns.
+
+\end{itemize}
+\textbf{Output}: A panel of implied leverage ratios: $\text{Lev}_{s,t}$ for each sub-sector $s$ and each quarter $t$ (2013Q1--2024Q4). This is a single number per sub-sector per quarter --- the ``true'' economic leverage.
+
+\textbf{$\rightarrow$ Link to Module 2}: The implied leverage ratios serve as \textit{edge weights} in the bipartite network. Higher leverage for sub-sector $s$ means the edges from banks to $s$ carry more systemic weight (because a given \$ exposure to a highly-leveraged NBFI poses more fire-sale risk).
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 2: Bipartite Bank-NBFI Network}
+
+\textbf{Purpose}: Map the bilateral exposure network between G-SIB banks and NBFI sub-sectors, weighted by both exposure amounts and the implied leverage from Module 1.
+
+\textbf{Unit of observation}: Directed edge from bank \$i\$ to NBFI sub-sector \$j\$ $\times$ quarter \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Bilateral exposure & $\text{Exp}_{ij,t}$ & Bank \$i\$'s total exposure (repo lending + derivatives counterparty) to NBFI sub-sector \$j\$ & BIS Locational Banking Stats; OFR bilateral repo data & Quarterly & Bank $\times$ NBFI sub-sector \\
+\hline
+Implied leverage & $\text{Lev}_{j,t}$ & From Module 1 & Module 1 output & Quarterly & NBFI sub-sector \\
+\hline
+Institution metadata & --- & Bank names, NBFI sub-sector classification, country & FSB G-SIB list; own classification & Static & Institution \\
+\hline
+\end{longtable}
+}
+
+\textbf{Network construction}:
+
+The network is a \textbf{directed weighted bipartite graph} $G_t = (V_B \cup V_N, E_t)$ where:
+\begin{itemize}
+\item $V_B$ = set of G-SIB banks (nodes on one side)
+\item $V_N$ = set of NBFI sub-sectors (nodes on the other side)
+\item $E_t$ = set of directed edges with two types:
+\item \textbf{Repo lending}: bank $i \to$ NBFI \$j\$ (bank lends cash, NBFI posts collateral)
+\item \textbf{Derivatives counterparty risk}: NBFI $j \to$ bank \$i\$ (NBFI's potential default affects bank)
+
+\end{itemize}
+The \textbf{exposure-weighted adjacency matrix} is:
+
+\[W_{ij,t} = \frac{\text{Exp}_{ij,t} \times \text{Lev}_{j,t}}{\sum_k \text{Exp}_{ik,t} \times \text{Lev}_{k,t}}\]
+
+This normalises by the total leverage-weighted exposure of bank \$i\$, so each row sums to 1.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item No econometric estimation --- this is a data construction step.
+\item Network is built using \texttt{networkx} (Python). The function \texttt{build\_exposure\_network()} creates a \texttt{DiGraph} from the exposure panel.
+\item Centrality measures computed: PageRank, eigenvector centrality, betweenness centrality, in/out-strength (weighted degree).
+\item The network evolves quarterly from 2015Q1 to 2024Q4 (limited by BIS sectoral breakdown availability; extended to 2013 where OFR bilateral data permits).
+
+\end{itemize}
+\textbf{Output}:
+\begin{itemize}
+\item A time series of adjacency matrices $W_t$ (one per quarter, dimension: $n_{\text{banks}} \times n_{\text{NBFI sectors}}$).
+\item Centrality rankings for each node at each date.
+\item Network summary statistics over time: density, total exposure, HHI (concentration), reciprocity.
+
+\end{itemize}
+\textbf{$\rightarrow$ Link to Module 3}: The adjacency matrix $W_t$ is the direct input to the spectral analysis. The HLI is the largest eigenvalue of $W_t$.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 3: Hidden Leverage Index (Spectral)}
+
+\textbf{Purpose}: Collapse the bipartite network into a single scalar measure of systemic amplification potential --- the Hidden Leverage Index (HLI) --- using the spectral radius of the exposure matrix.
+
+\textbf{Unit of observation}: Aggregate system-level measure $\times$ quarter \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Adjacency matrix & $W_t$ & Leverage-weighted exposure matrix from Module 2 & Module 2 output & Quarterly & System-level \\
+\hline
+\end{longtable}
+}
+
+\textbf{Model specification}:
+
+\[\text{HLI}_t = \lambda_1(W_t)\]
+
+where $\lambda_1(W_t)$ is the \textbf{largest eigenvalue} (spectral radius) of the normalised exposure matrix $W_t$.
+
+\textbf{Economic intuition} (Acemoglu, Ozdaglar \& Tahbaz-Salehi 2015): The spectral radius captures the \textit{maximum amplification factor} of the network. If a shock hits one node, the total cascade of losses through the network is bounded by a function of $\lambda_1$. When $\lambda_1$ is high, the network is ''tightly wound'' --- shocks propagate and amplify. When $\lambda_1$ is low, the network is loosely connected and shocks dissipate.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item Computed via \texttt{numpy.linalg.eigvals(W\_t)} at each quarter.
+\item No estimation --- this is a deterministic transformation of $W_t$.
+\item Robustness: also compute the second eigenvalue $\lambda_2$ (captures secondary amplification channels) and the spectral gap $\lambda_1 - \lambda_2$ (captures how ''dominant'' the main amplification channel is).
+
+\end{itemize}
+\textbf{Output}: A quarterly time series $\{\text{HLI}_t\}_{t=2013Q1}^{2024Q4}$ --- a single number per quarter measuring systemic amplification potential.
+
+\textbf{Validation}: The HLI should spike \textit{before} known stress episodes:
+\begin{itemize}
+\item March 2020 (COVID dash-for-cash)
+\item September 2022 (UK gilt/LDI crisis)
+\item March 2023 (SVB failure)
+
+\end{itemize}
+If it does, this confirms its value as a leading indicator.
+
+\textbf{$\rightarrow$ Link to Module 4}: The HLI time series enters Module 4 as a predictor in tail risk regressions (quantile connectedness and Growth-at-Risk).
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 4: Tail Risk Econometrics}
+
+Module 4 has \textbf{three sub-analyses}, all using the HLI from Module 3 as a key variable.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\paragraph{Module 4a: Quantile Connectedness (Bank-NBFI System)}
+
+\textbf{Purpose}: Test whether the bank-NBFI system is more interconnected in the tails (stress) than at the median (normal times).
+
+\textbf{Unit of observation}: System of \$k\$ return series $\times$ week \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Bank sector returns & $r_{i,t}^B$ & Weekly log-returns for G-SIB banks (or bank sector index) & Bloomberg / Refinitiv & Weekly & Institution or sector \\
+\hline
+NBFI sector returns & $r_{j,t}^N$ & Weekly log-returns for NBFI sub-sector indices (HF index, MMF index, insurance index, etc.) & Bloomberg (HFRX, etc.) & Weekly & Sub-sector index \\
+\hline
+\end{longtable}
+}
+
+\textbf{System}: A vector $Y_t = (r_1^B, \ldots, r_m^B, r_1^N, \ldots, r_n^N)'$ of \$k = m + n\$ return series (e.g., 5 bank sector returns + 5 NBFI sub-sector returns = 10-variable system).
+
+\textbf{Model specification} --- Quantile VAR at quantile $\tau$:
+
+\[Q_{\tau}(y_{i,t} \mid Y_{t-1}, \ldots, Y_{t-p}) = c_i(\tau) + \sum_{j=1}^{k} \sum_{l=1}^{p} \beta_{ij}^{(l)}(\tau) \, y_{j,t-l}\]
+
+This is a standard VAR except that \textit{every coefficient depends on the quantile $\tau$}. At $\tau = 0.05$, you are modelling the left tail; at $\tau = 0.50$, the median; at $\tau = 0.95$, the right tail.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item Estimated \textbf{equation by equation} using \texttt{statsmodels.QuantReg} (linear quantile regression, Koenker \& Bassett 1978).
+\item For each equation \$i\$: the dependent variable is $y_{i,t}$; the regressors are \$p\$ lags of all \$k\$ variables plus an intercept.
+\item Lags: \$p = 4\$ (quarterly data) or \$p = 2\$ (weekly data). Selected via BIC at each quantile.
+\item Quantiles estimated: $\tau \in \{0.05, 0.25, 0.50, 0.75, 0.95\}$.
+\item From the estimated QVAR, compute the \textbf{Generalised Forecast Error Variance Decomposition (GFEVD)} at horizon \$h = 10\$:
+\item Uses the companion matrix to compute MA representation.
+\item GFEVD entry $\theta_{ij}(\tau)$ = share of variable \$i\$'s \$h\$-step forecast error variance attributable to shocks in variable \$j\$, at quantile $\tau$.
+\item Normalised so rows sum to 100\%.
+
+\end{itemize}
+\textbf{Connectedness measures} (Ando, Greenwood-Nimmo \& Shin 2022):
+\begin{itemize}
+\item \textbf{Total connectedness}: $C(\tau) = \frac{1}{k} \sum_{i \neq j} \theta_{ij}(\tau) \times 100\%$
+\item \textbf{To-others}: $\text{TO}_i(\tau) = \sum_{j \neq i} \theta_{ji}(\tau)$ --- how much \$i\$ transmits to the system
+\item \textbf{From-others}: $\text{FROM}_i(\tau) = \sum_{j \neq i} \theta_{ij}(\tau)$ --- how much \$i\$ receives from the system
+\item \textbf{Net}: $\text{NET}_i(\tau) = \text{TO}_i - \text{FROM}_i$ --- net transmitter (\$>0\$) or net receiver (\$<0\$)
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item A $k \times k$ GFEVD matrix $\Theta(\tau)$ at each quantile --- shows pairwise spillover direction and magnitude.
+\item Total connectedness at each quantile: \$C(0.05)\$, \$C(0.50)\$, \$C(0.95)\$.
+\item Directional spillovers: which sectors are net transmitters vs. receivers of risk, and how this changes between median and tails.
+
+\end{enumerate}
+\textbf{Key test}: Is $C(0.05) \gg C(0.50)$? If total connectedness at the 5th percentile is much higher than at the median, the system is asymmetrically interconnected --- more contagious during stress.
+
+\textbf{Rolling version}: Estimated on a rolling window (60 weeks), stepping 1 week at a time. Produces a time series of $C_t(0.05)$ and $C_t(0.50)$ that tracks how tail connectedness evolves through crisis episodes.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\paragraph{Module 4b: Tail-Risk Amplification (Quantile Regression with HLI Interaction)}
+
+\textbf{Purpose}: Test whether high hidden leverage amplifies left-tail outcomes --- i.e., does the HLI predict \textit{worse} downside risk during stress?
+
+\textbf{Unit of observation}: Quarter \$t\$ (aggregate time series).
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Outcome variable & $y_t$ & System-wide equity return or financial conditions index & Bloomberg / FRED & Quarterly & Aggregate \\
+\hline
+Stress indicator & $\text{Stress}_t$ & VIX level, or dummy for VIX \$>\$ 75th percentile & CBOE (via FRED) & Quarterly & Aggregate \\
+\hline
+Hidden Leverage Index & $\text{HLI}_t$ & From Module 3 & Module 3 output & Quarterly & Aggregate \\
+\hline
+Controls & $X_t$ & Term spread (10Y-2Y), credit spread (BAA-AAA), GDP growth & FRED & Quarterly & Aggregate \\
+\hline
+\end{longtable}
+}
+
+\textbf{Model specification} --- Quantile regression at $\tau = 0.05$:
+
+\[Q_{\tau}(y_t) = \alpha(\tau) + \beta_1(\tau) \cdot \text{Stress}_t + \beta_2(\tau) \cdot \text{HLI}_{t-1} + \beta_3(\tau) \cdot (\text{Stress}_t \times \text{HLI}_{t-1}) + \gamma(\tau)' X_{t-1} + \varepsilon_t\]
+
+Note: HLI is \textbf{lagged} (predictive, not contemporaneous) to address endogeneity.
+
+\textbf{Key parameter}: $\beta_3(\tau = 0.05)$. If negative and significant: high hidden leverage makes left-tail outcomes \textit{worse} during stress. If $\beta_3(\tau = 0.50) \approx 0$: no effect at the median --- confirming this is a \textit{tail-specific} amplification mechanism.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item \texttt{statsmodels.QuantReg} at $\tau \in \{0.05, 0.25, 0.50, 0.75, 0.95\}$.
+\item Standard errors: Kernel (Hall-Sheather bandwidth) or bootstrap (1000 replications).
+\item Formal interquantile test: Wald test of $H_0: \beta_3(0.05) = \beta_3(0.50)$.
+
+\end{itemize}
+\textbf{Output}: Table of coefficients across quantiles, showing that the HLI$\times$Stress interaction is large and negative at $\tau = 0.05$ but near zero at $\tau = 0.50$.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\paragraph{Module 4c: Growth-at-Risk (Adrian et al. 2019)}
+
+\textbf{Purpose}: Test whether the HLI predicts worse left-tail GDP growth --- extending the GaR framework with an NBFI-specific predictor.
+
+\textbf{Unit of observation}: Quarter \$t\$ (aggregate time series). Potentially also country \$c\$ $\times$ quarter \$t\$ (panel).
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Future GDP growth & $y_{t+h}$ & Real GDP growth at horizon \$h\$ (1, 4, 8, 12 quarters ahead) & FRED (GDPC1) & Quarterly & Aggregate \\
+\hline
+Financial conditions & $\text{FCI}_t$ & National Financial Conditions Index or composite (VIX + credit spread + term spread) & Chicago Fed NFCI; or constructed & Quarterly & Aggregate \\
+\hline
+Hidden Leverage Index & $\text{HLI}_t$ & From Module 3 & Module 3 output & Quarterly & Aggregate \\
+\hline
+\end{longtable}
+}
+
+\textbf{Model specification} --- Quantile regression:
+
+\[Q_{\tau}(y_{t+h}) = \alpha(\tau) + \beta_1(\tau) \cdot \text{FCI}_t + \beta_2(\tau) \cdot \text{HLI}_t + \varepsilon_t\]
+
+Estimated at multiple horizons $h \in \{1, 2, 4, 8, 12\}$ quarters and multiple quantiles $\tau \in \{0.05, 0.25, 0.50, 0.75, 0.95\}$.
+
+\textbf{Key test}: $\beta_2(\tau = 0.05) < 0$ and significant, but $\beta_2(\tau = 0.50) \approx 0$. This means high hidden leverage predicts worse left-tail growth outcomes but has no effect on median growth --- confirming that shadow leverage is a \textit{tail risk} phenomenon.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item \texttt{statsmodels.QuantReg} with \texttt{growth\_at\_risk()} function from \texttt{src/econometrics/quantile\_var.py}.
+\item Also estimate the ''term structure of GaR'': how the FCI and HLI effects change across horizons \$h\$.
+\item Extended sample: 2000Q1--2024Q4 using annual FSB data interpolated to quarterly frequency for the HLI.
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item \textbf{GaR term structure plot}: for each horizon \$h\$, the 5th percentile of predicted GDP growth, split by HLI high vs. HLI low.
+\item \textbf{Coefficient table}: $\beta_2(\tau)$ across quantiles --- showing the HLI matters only in the left tail.
+\item \textbf{Fan chart}: predicted distribution of future GDP growth conditional on current FCI and HLI values.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module Linkage Map (Project 1)}
+
+
+\begin{verbatim}
+                    +----------------------------------+
+  OFR / ECB repo    |  Module 1: Implied Leverage       |
+  DTCC derivatives  |  Input: E, R, D per sub-sector    |    Output: Lev_{s,t}
+  FSB monitoring    |  Formula: (E + R + deltaD) / E        |    panel
+                    +--------------+-------------------+
+                                   | Leverage weights edges
+                                   v
+                    +----------------------------------+
+  BIS Locational    |  Module 2: Bipartite Network      |
+  OFR bilateral     |  Input: Exp_{ij,t}, Lev_{j,t}    |    Output: W_t
+  repo data         |  Construct: adjacency matrix W_t  |    adjacency matrices
+                    +--------------+-------------------+
+                                   | Spectral decomposition
+                                   v
+                    +----------------------------------+
+                    |  Module 3: HLI (Spectral Index)   |
+                    |  Input: W_t                       |    Output: HLI_t
+                    |  Compute: lambda_1(W_t)                |    quarterly scalar
+                    +--------------+-------------------+
+                                   | Predictor in regressions
+                      +------------+------------+
+                      v            v            v
+               +------------+ +----------+ +----------+
+               |  4a: QVAR  | | 4b: Tail | | 4c: GaR  |
+               |  Connect.  | | Amplif.  | |          |
+               +------------+ +----------+ +----------+
+\end{verbatim}
+
+
+\subsection{Expected Contributions}
+
+\begin{enumerate}
+\item First implied leverage measure for NBFIs from publicly observable market data.
+\item Hidden Leverage Index as a leading indicator --- spikes before March 2020 and September 2022.
+\item Shadow leverage amplifies left-tail risk (GaR) but has no effect at the median.
+\item Quantile connectedness confirms asymmetric contagion in bank-NBFI networks.
+
+\end{enumerate}
+
+\subsection{Data Sources \& Sample}
+
+
+{\small
+\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\hline
+\textbf{Data Source} & \textbf{Variables} & \textbf{Frequency} & \textbf{Coverage} \\
+\hline
+\endhead
+OFR US Repo (SOFR) & Repo volumes, rates, counterparty type & Daily & 2014--present \\
+\hline
+ECB MMSR & Euro repo volumes by counterparty & Daily & 2016--present \\
+\hline
+DTCC Swap Data Repository & IRS/CDS notional, counterparty type & Weekly & 2013--present \\
+\hline
+FSB Global Monitoring Report & NBFI sector AUM, leverage proxies & Annual & 2002--present \\
+\hline
+BIS Locational Banking Stats & Cross-border bank-NBFI exposures & Quarterly & 2000--present \\
+\hline
+FRED / ECB SDW & GDP, financial conditions, VIX, spreads & Mixed & 2000--present \\
+\hline
+\end{longtable}
+}
+
+\textbf{Sample period}: 2013Q1--2024Q4 (post-DTCC reporting). Extended to 2000 for GaR regressions using FSB annual data.
+
+\textbf{Key stress episodes for validation}: Taper Tantrum (May 2013), China devaluation (Aug 2015), Gilt crisis (Sep 2022), COVID-19 (Mar 2020), SVB failure (Mar 2023).
+
+
+\subsection{Literature Positioning}
+
+This project contributes to three strands:
+
+\begin{enumerate}
+\item \textbf{NBFI leverage measurement}: Extends Jiang, Matvos, Piskorski \& Seru (2024) on hidden bank losses to the NBFI sector. Complements FSB (2023) Global Monitoring Report with a market-data-based approach.
+
+\item \textbf{Spectral network measures}: Builds on Acemoglu, Ozdaglar \& Tahbaz-Salehi (2015) and Greenwood, Landier \& Thesmar (2015) on network-based contagion measures. The HLI adapts the spectral radius concept to a bipartite bank-NBFI setting.
+
+\item \textbf{Growth-at-Risk}: Extends Adrian, Boyarchenko \& Giannone (2019) by adding NBFI-specific predictors (hidden leverage) to the financial conditions $\rightarrow$ GDP growth-at-risk framework.
+
+\end{enumerate}
+
+\subsection{Identification \& Robustness}
+
+\begin{itemize}
+\item \textbf{Endogeneity of leverage}: Leverage is both a response to and a predictor of stress. We address this via (a) lagged HLI values, (b) Granger causality tests, and (c) instrumenting leverage with regulatory threshold dummies (e.g., margin call triggers).
+\item \textbf{Measurement error in implied leverage}: Delta-equivalence factor $\delta$ is calibrated from BIS survey data; robustness across $\delta \in [0.02, 0.10]$.
+\item \textbf{Network construction sensitivity}: Results tested across alternative edge-weighting schemes (gross vs net, bilateral vs multilateral netting).
+
+\end{itemize}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\section{Project 2: Mapping the Channels}
+
+\textbf{Subtitle:} Network Analysis of Non-Bank Amplification in Monetary Policy Transmission
+
+
+\subsection{Motivation}
+
+Building on Banerjee, Hofmann, Ng \& Pinter (2025, BIS Bulletin 116), who document
+that other financial intermediaries (OFIs) amplify monetary policy transmission to
+long-term yields and credit spreads while insurance companies and pension funds
+(ICPFs) dampen it, we decompose this aggregate effect using granular network and
+connectedness methods. Their panel local-projection analysis reveals significant
+amplification but with wide confidence bands, leaving open: \textit{which} OFI sub-sectors
+drive it, \textit{through which} balance-sheet channels, and \textit{under what} conditions.
+
+
+\subsection{Hypotheses}
+
+\textbf{H1 (Heterogeneous amplification).} Procyclicality beta is highest for hedge
+funds and leveraged investment funds, moderate for bond mutual funds and MMFs,
+and lowest for pension funds and insurance.
+
+\textbf{H2 (Nonlinear tail transmission).} Quantile IRFs at $\tau = 0.05$ show 2--3$\times$
+stronger responses than at $\tau = 0.50$, especially for the policy rate $\rightarrow$ hedge
+fund returns link.
+
+\textbf{H3 (Variance amplification).} NBFI leverage increases the conditional variance
+(not just the conditional mean) of future growth outcomes, generating fatter
+left tails.
+
+\textbf{H4 (Network containment).} During the 2022--23 hiking cycle, within-OFI
+connectedness was high but OFI-to-real-economy connectedness remained low,
+explaining the resilience puzzle.
+
+
+\subsection{Empirical Strategy}
+
+Project 2 has \textbf{five modules}. Module 1 establishes the micro-foundation (VaR-constraint channel). Modules 2--3 provide the econometric core. Modules 4--5 address variance effects and the 2022--23 puzzle.
+
+
+\begin{verbatim}
+Module 1 (VaR Channel)  --→  Module 2 (DCC-GARCH)  --→  Module 3 (Quantile VAR)  --→  Module 4 (LS-GaR)  --→  Module 5 (Banerjee Puzzle)
+       ↓                            ↓                           ↓                          ↓                        ↓
+  Sub-sector beta_s            Time-varying bank-         Tail-specific MP              NBFI leverage         Within-OFI vs
+  procyclicality            NBFI correlations          transmission IRFs             fattens tails         OFI-to-real
+  + fire-sale sim           (regime detection)         + connectedness               (variance channel)    economy split
+\end{verbatim}
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 1: VaR-Constraint Channel (Adrian \& Shin 2010, 2014)}
+
+
+\paragraph{Economic logic}
+
+Financial intermediaries subject to Value-at-Risk (VaR) constraints manage their balance sheets by targeting a maximum loss at a given confidence level. When asset prices rise, measured portfolio risk (VaR) falls mechanically, creating unused risk capacity. Intermediaries respond by expanding their balance sheets --- buying more assets funded by short-term debt --- so that leverage \textit{rises} with total assets. This is the \textbf{procyclicality of leverage}: $\text{Corr}(\Delta \log \text{Leverage}, \Delta \log \text{Assets}) > 0$.
+
+The reverse is more dangerous. When asset prices fall, VaR rises, breaching the constraint. Intermediaries must sell assets to restore compliance, which depresses prices further, triggering more VaR breaches across interconnected institutions --- the \textbf{fire-sale spiral}. Adrian \& Shin (2010, 2014) document this mechanism for US broker-dealers. We extend it to the full NBFI universe and test whether the mechanism is heterogeneous across sub-sectors.
+
+
+\paragraph{What we test}
+
+\begin{enumerate}
+\item \textbf{Procyclicality by sub-sector (H1)}: Is leverage procyclical for each NBFI type, and is the procyclicality coefficient $\beta_s$ larger for leveraged sub-sectors (hedge funds) than for liability-driven ones (pension funds, insurance)?
+
+\item \textbf{Fire-sale amplification}: Does adding NBFI sub-sectors to a bank-only fire-sale simulation produce larger aggregate losses, and which sub-sectors contribute most to the amplification?
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\paragraph{Specification 1: Procyclicality of leverage (sub-sector panel)}
+
+\textbf{Unit of observation}: NBFI sub-sector \$s\$ in quarter \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Leverage & $\text{Lev}_{s,t}$ & Total assets / equity (net asset value) of sub-sector \$s\$ & Fed Z.1 Flow of Funds; ECB Investment Fund Statistics & Quarterly & Sub-sector aggregate \\
+\hline
+Total assets & $A_{s,t}$ & Total financial assets of sub-sector \$s\$ & Fed Z.1 (tables L.122--L.130) & Quarterly & Sub-sector aggregate \\
+\hline
+Equity & $E_{s,t}$ & Net asset value (= assets - liabilities) of sub-sector \$s\$ & Fed Z.1 & Quarterly & Sub-sector aggregate \\
+\hline
+VIX & $\text{VIX}_t$ & CBOE Volatility Index (quarterly average of daily values) & FRED (VIXCLS) & Daily $\rightarrow$ Quarterly avg & Aggregate \\
+\hline
+Term spread & --- & 10Y Treasury - 2Y Treasury yield & FRED (T10Y2Y) & Daily $\rightarrow$ Quarterly avg & Aggregate \\
+\hline
+Credit spread & --- & BAA - AAA corporate bond spread & FRED (BAA - AAA) & Daily $\rightarrow$ Quarterly avg & Aggregate \\
+\hline
+GDP growth & --- & Real GDP quarter-on-quarter growth (annualised) & FRED (GDPC1) & Quarterly & Aggregate \\
+\hline
+\end{longtable}
+}
+
+\textbf{Sub-sectors} $s \in \{$hedge funds, MMFs, bond mutual funds, equity mutual funds, ETFs, insurance companies, pension funds, finance companies, securitisation vehicles$\}$.
+
+\textbf{Model specification}:
+
+\[\Delta \log(\text{Lev}_{s,t}) = \alpha_s + \beta_s \cdot \Delta \log(A_{s,t}) + \gamma \cdot X_{s,t-1} + \delta_t + \varepsilon_{s,t}\]
+
+where:
+\begin{itemize}
+\item $\text{Lev}_{s,t} = A_{s,t} / E_{s,t}$ is the leverage ratio of sub-sector \$s\$
+\item $X_{s,t-1}$ = lagged controls: VIX level, term spread, credit spread, GDP growth
+\item $\alpha_s$ = \textbf{sub-sector fixed effects} (absorb time-invariant differences in business models, regulatory treatment, and average leverage levels)
+\item $\delta_t$ = \textbf{time fixed effects} (absorb common macroeconomic shocks --- monetary policy, global risk appetite --- that affect all sub-sectors simultaneously)
+\item $\beta_s$ = sub-sector-specific procyclicality coefficient (the \textbf{key parameter of interest})
+
+\end{itemize}
+\textbf{Interpretation of $\beta_s$}: $\beta_s > 0$ means leverage is procyclical (rises when assets grow, falls when assets shrink) --- consistent with active VaR-constraint management. $\beta_s \approx 0$ means leverage is roughly constant (passive balance sheet). $\beta_s < 0$ would mean counter-cyclical leverage.
+
+\textbf{Expected ranking} (H1): $\beta_{\text{HF}} > \beta_{\text{Lev. funds}} > \beta_{\text{Bond MF}} > \beta_{\text{MMF}} > \beta_{\text{IC}} \approx \beta_{\text{PF}} \approx 0$.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item OLS panel regression with entity and time fixed effects.
+\item Standard errors clustered at the sub-sector level (9 clusters). Robustness: two-way clustering (sub-sector $\times$ year).
+\item In code: \texttt{sector\_procyclicality()} in \texttt{src/models/var\_amplification.py} estimates this for each sub-sector using rolling volatility as a VaR-implied leverage proxy: $\text{Lev}_{\text{implied}} = 1/(z_\alpha \cdot \sigma)$ where $z_\alpha$ is the VaR critical value and $\sigma$ is rolling volatility.
+
+\end{itemize}
+\textbf{Output}: A table of $\beta_s$ coefficients with standard errors, one row per sub-sector. Bar chart showing the ranking.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\paragraph{Specification 2: Interaction with stress}
+
+\textbf{Purpose}: Test whether procyclicality \textit{intensifies} during stress (asymmetric amplification).
+
+\textbf{Model specification}:
+
+\[\Delta \log(\text{Lev}_{s,t}) = \alpha_s + \beta_1 \cdot \Delta \log(A_{s,t}) + \beta_2 \cdot \Delta \log(A_{s,t}) \times \text{Stress}_t + \gamma \cdot X_{s,t-1} + \delta_t + \varepsilon_{s,t}\]
+
+where $\text{Stress}_t$ = dummy for quarters with VIX \$>\$ 75th percentile (or NBER recession indicator).
+
+\textbf{Key test}: If $\beta_2 > 0$: procyclicality is \textit{stronger} during stress --- exactly when it does most damage.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\paragraph{Specification 3: Fire-sale simulation (Greenwood, Landier \& Thesmar 2015)}
+
+\textbf{Purpose}: Quantify how much NBFIs amplify fire-sale losses beyond a bank-only system.
+
+\textbf{Unit of observation}: Simulated system (agent-based, not regression).
+
+\textbf{Input variables (simulation parameters)}:
+
+
+{\small
+\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\hline
+\textbf{Parameter} & \textbf{Symbol} & \textbf{Definition} & \textbf{Value} \\
+\hline
+\endhead
+Initial shock & --- & Exogenous decline in asset prices & -5\% \\
+\hline
+Market depth & $\lambda^{-1}$ & Kyle (1985) price impact parameter (\$ volume needed to move price 1\%) & \$500K (calibrated) \\
+\hline
+VaR confidence & $z_\alpha$ & Confidence level for VaR constraint & 99\% (banks), 95--99.5\% (NBFIs) \\
+\hline
+GARCH decay & --- & EWMA lambda for volatility updating & 0.94 \\
+\hline
+Bank system & --- & 10 banks, leverage 10--15$\times$, $\sigma$ 1--2\% & Calibrated to G-SIB data \\
+\hline
+NBFI system & --- & 20 entities: 5 HFs (leverage 5--25$\times$), 8 investment funds (1--3$\times$), 4 pension funds (1--2$\times$), 3 insurance (3--8$\times$) & Calibrated to FSB data \\
+\hline
+\end{longtable}
+}
+
+\textbf{Simulation mechanism} (multi-round):
+\begin{enumerate}
+\item \textbf{Initial shock}: Asset prices fall by -5\%.
+\item \textbf{Volatility update}: Each entity updates its rolling volatility estimate (EWMA, $\lambda = 0.94$).
+\item \textbf{VaR tightening}: Higher volatility means the VaR constraint binds more --- entities with VaR-constrained leverage ($\beta_s > 0$) must reduce exposure.
+\item \textbf{Forced selling}: Entities sell assets to restore target leverage. Selling volume = excess leverage $\times$ assets.
+\item \textbf{Price impact}: Aggregate selling depresses prices via Kyle lambda: $\Delta p = -\text{TotalSelling} / \text{MarketDepth}$.
+\item \textbf{Repeat}: Steps 2--5 iterate until convergence (total selling $< 0.01\%$ of assets) or max 50 rounds.
+
+\end{enumerate}
+\textbf{Comparison}:
+\begin{itemize}
+\item \textit{Bank-only system}: Only 10 banks participate in fire-sale rounds.
+\item \textit{Bank + NBFI system}: All 30 entities participate with their calibrated parameters.
+\item \textbf{Amplification ratio} = Total price drop (bank+NBFI) / Total price drop (bank-only). If \$> 1\$: NBFIs amplify.
+
+\end{itemize}
+\textbf{Estimation details}:
+\begin{itemize}
+\item Implemented as \texttt{FireSaleSimulation} dataclass in \texttt{src/models/var\_amplification.py}.
+\item \texttt{run\_counterfactual()} runs both systems with identical initial shock and compares.
+\item \texttt{amplification\_ratio()} computes the ratio plus equity losses for each system.
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item \textbf{Amplification ratio}: e.g., 1.8$\times$ means bank+NBFI system suffers 80\% larger price drop.
+\item \textbf{Round-by-round dynamics}: time series of asset prices, aggregate leverage, total equity, and number of active entities --- for both systems.
+\item \textbf{3-panel comparison chart}: asset price path, leverage path, and equity path for bank-only vs. bank+NBFI.
+
+\end{enumerate}
+\textbf{$\rightarrow$ Link to Module 2}: The procyclicality coefficients $\beta_s$ from Specification 1 inform which sub-sectors are most dangerous in the fire-sale simulation. Module 2 (DCC-GARCH) tests whether the bank-NBFI correlations that drive fire-sale contagion are indeed time-varying and stress-dependent.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 2: DCC-GARCH Dynamic Correlations (Engle 2002)}
+
+\textbf{Purpose}: Estimate time-varying pairwise correlations between bank and NBFI sector returns, testing whether correlations spike during stress (confirming that contagion is regime-dependent, not constant).
+
+\textbf{Unit of observation}: Pair of return series (bank \$i\$, NBFI sub-sector \$j\$) $\times$ week \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Bank returns & $r_{i,t}$ & Weekly log-returns for individual G-SIBs or bank sector index & Bloomberg / Yahoo Finance & Weekly & Institution \\
+\hline
+NBFI returns & $r_{j,t}$ & Weekly log-returns for NBFI sub-sector indices or representative firms & Bloomberg (BLK, BX, KKR, MET, PRU, etc.) & Weekly & Institution or sub-sector \\
+\hline
+\end{longtable}
+}
+
+\textbf{Typical system}: 6 entities --- e.g., top 3 banks (JPM, GS, HSBC) + top 3 NBFIs (BLK, BX, MET). Or sector-level indices.
+
+\textbf{Model specification} --- Two-step DCC(1,1):
+
+\textbf{Step 1 --- Univariate GARCH(1,1)} for each series \$i\$:
+
+\[r_{i,t} = \mu_i + \varepsilon_{i,t}, \quad \varepsilon_{i,t} = \sigma_{i,t} z_{i,t}, \quad z_{i,t} \sim N(0,1)\]
+
+\[\sigma_{i,t}^2 = \omega_i + \alpha_i \varepsilon_{i,t-1}^2 + \beta_i \sigma_{i,t-1}^2\]
+
+This gives: conditional volatilities $\sigma_{i,t}$ and standardised residuals $z_{i,t} = \varepsilon_{i,t}/\sigma_{i,t}$.
+
+\textbf{Step 2 --- DCC dynamics} on the standardised residuals:
+
+\[Q_t = (1 - a - b)\bar{Q} + a(z_{t-1}z_{t-1}') + b Q_{t-1}\]
+
+\[R_t = \text{diag}(Q_t)^{-1/2} \cdot Q_t \cdot \text{diag}(Q_t)^{-1/2}\]
+
+where:
+\begin{itemize}
+\item $\bar{Q}$ = unconditional correlation matrix of $z_t$ (estimated from full sample)
+\item \$a\$ = ''news'' parameter --- how fast correlations react to shocks (typically 0.01--0.10)
+\item \$b\$ = ''persistence'' parameter --- how slowly correlations revert (typically 0.85--0.98)
+\item $R_t$ = time-varying correlation matrix (the object of interest)
+
+\end{itemize}
+\textbf{Estimation details}:
+\begin{itemize}
+\item \textbf{Step 1}: \texttt{arch} package in Python. \texttt{fit\_univariate\_garch()} in \texttt{src/models/dcc\_garch.py}. GARCH(1,1) with constant mean. Standard MLE.
+\item \textbf{Step 2}: Quasi-MLE on DCC log-likelihood. \texttt{estimate\_dcc()} uses Nelder-Mead optimisation with initial values $a_0 = 0.05$, $b_0 = 0.90$. Constraint: \$a > 0\$, \$b > 0\$, \$a + b < 1\$.
+\item Persistence \$= a + b\$. High persistence (e.g., \$0.98\$) means correlations are very slowly mean-reverting.
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item \textbf{Dynamic pairwise correlations} $\rho_{ij,t}$: time series of correlation between every pair of entities. Plotted as line charts over 2000--2024.
+\item \textbf{Sector-average correlations}: \texttt{sector\_average\_correlation()} averages all bank-HF pairs, all bank-insurance pairs, etc. Shows which bank-NBFI links are tightest.
+\item \textbf{Contagion test} (Forbes \& Rigobon 2002): \texttt{correlation\_breakdown\_test()} formally tests whether correlations are \textit{significantly higher} during crisis periods (VIX > 75th percentile) vs. calm periods. Output: mean correlation in each regime, difference, t-statistic, p-value.
+
+\end{enumerate}
+\textbf{Key findings expected}:
+\begin{itemize}
+\item Bank-hedge fund correlations spike during stress (confirming fire-sale contagion channel from Module 1).
+\item Bank-pension fund correlations are low and stable (confirming that liability-driven entities don't amplify).
+\item Bank-insurance correlations increase moderately (mixed evidence).
+
+\end{itemize}
+\textbf{$\rightarrow$ Link to Module 3}: DCC-GARCH captures \textit{mean} correlation dynamics. Module 3 (Quantile VAR) goes further by estimating \textit{tail-specific} dependence --- testing whether the system is more connected at the 5th percentile than at the median.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 3: Quantile VAR --- Nonlinear Transmission (Core Innovation)}
+
+\textbf{Purpose}: Estimate how monetary policy shocks propagate through the bank-NBFI system at different points of the return distribution. The key question: is MP transmission a \textit{tail phenomenon} --- much stronger at the 5th percentile than at the median?
+
+\textbf{Unit of observation}: System of \$k\$ return/macro series $\times$ quarter \$t\$ (or month \$t\$).
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Policy rate & $r_t^{MP}$ & Effective Fed funds rate (or shadow rate during ZLB) & FRED (DFF; Wu-Xia shadow rate) & Monthly $\rightarrow$ Quarterly & Aggregate \\
+\hline
+Bank sector return & $r_t^{B}$ & Aggregate bank equity return index & Bloomberg (KBW Bank Index or constructed) & Weekly $\rightarrow$ Quarterly & Sector \\
+\hline
+Hedge fund return & $r_t^{HF}$ & Hedge fund composite return & HFRX Global Index; Bloomberg & Monthly $\rightarrow$ Quarterly & Sector \\
+\hline
+MMF return & $r_t^{MMF}$ & Money market fund return (proxy: short-term yield changes) & iMoneyNet; FRED (money market yields) & Monthly $\rightarrow$ Quarterly & Sector \\
+\hline
+Bond fund return & $r_t^{BF}$ & Bond mutual fund return & Bloomberg (AGG total return) & Monthly $\rightarrow$ Quarterly & Sector \\
+\hline
+Insurance return & $r_t^{IC}$ & Insurance sector equity return & Bloomberg (S\&P Insurance Index) & Weekly $\rightarrow$ Quarterly & Sector \\
+\hline
+Credit spread & $s_t$ & BAA--AAA corporate bond spread & FRED (BAA - AAA) & Monthly $\rightarrow$ Quarterly & Aggregate \\
+\hline
+Term spread & --- & 10Y - 2Y Treasury & FRED (T10Y2Y) & Monthly $\rightarrow$ Quarterly & Aggregate \\
+\hline
+\end{longtable}
+}
+
+\textbf{System vector}: $Y_t = (r_t^{MP}, r_t^{B}, r_t^{HF}, r_t^{MMF}, r_t^{BF}, r_t^{IC}, s_t)'$ --- a \textbf{7-variable Quantile VAR}.
+
+The choice of variables is driven by the economic question: we want to trace how a monetary policy shock ($r^{MP}$) propagates to each NBFI sub-sector return and to credit spreads, and whether this transmission is stronger in the tails.
+
+\textbf{Model specification} --- Quantile VAR(p) at quantile $\tau$:
+
+\[Q_{\tau}(y_{i,t} \mid Y_{t-1}, \ldots, Y_{t-p}) = c_i(\tau) + \sum_{j=1}^{7} \sum_{l=1}^{p} \beta_{ij}^{(l)}(\tau) \, y_{j,t-l}\]
+
+For each of the 7 equations, the dependent variable $y_{i,t}$ is regressed on \$p\$ lags of all 7 variables. This gives $7 \times (7p + 1)$ coefficients \textit{at each quantile}.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item \textbf{Equation-by-equation quantile regression}: Each equation estimated separately via \texttt{statsmodels.QuantReg}. This is computationally feasible even for 7 equations because each is a standard linear quantile regression.
+\item \textbf{Lags}: \$p = 4\$ for quarterly data (one year of history). BIC-optimal at each quantile; robustness with $p \in \{1, 2, 4\}$.
+\item \textbf{Quantiles}: $\tau \in \{0.05, 0.25, 0.50, 0.75, 0.95\}$.
+\item \textbf{Residuals}: After estimation, compute residuals $\hat{u}_{i,t}(\tau) = y_{i,t} - \hat{Q}_\tau(y_{i,t}|\cdot)$ and their covariance matrix $\hat{\Sigma}(\tau)$.
+\item Implemented in \texttt{estimate\_quantile\_var()} and \texttt{estimate\_quantile\_var\_grid()} in \texttt{src/econometrics/quantile\_var.py}.
+
+\end{itemize}
+\textbf{From the QVAR, three outputs are computed:}
+
+\textbf{(a) Quantile Impulse Response Functions (QIRFs)}:
+\begin{itemize}
+\item Trace the effect of a 1-standard-deviation shock to variable \$j\$ (e.g., policy rate) on variable \$i\$ (e.g., hedge fund return) over \$h\$ periods.
+\item Uses the companion matrix representation: shock is propagated through the MA($\infty$) representation.
+\item Computed via \texttt{quantile\_irf()}. Key comparison: \texttt{compare\_quantile\_irfs()} shows the IRF at $\tau = 0.05$ vs. $\tau = 0.50$.
+\item \textbf{Expected result}: A monetary policy tightening shock has a 2--3$\times$ larger negative effect on hedge fund returns at $\tau = 0.05$ than at $\tau = 0.50$.
+
+\end{itemize}
+\textbf{(b) Quantile Connectedness} (Ando, Greenwood-Nimmo \& Shin 2022):
+\begin{itemize}
+\item From the QVAR, compute the GFEVD $\Theta(\tau)$ at horizon \$h = 10\$.
+\item Total connectedness: $C(\tau) = \frac{1}{k}\sum_{i \neq j} \theta_{ij}(\tau) \times 100\%$.
+\item Directional: TO, FROM, NET for each variable.
+\item Computed via \texttt{quantile\_connectedness()} in \texttt{src/econometrics/quantile\_var.py}.
+\item \textbf{Expected result}: $C(0.05) \gg C(0.50)$ --- the system is much more interconnected in the left tail.
+
+\end{itemize}
+\textbf{(c) Rolling Quantile Connectedness}:
+\begin{itemize}
+\item \texttt{rolling\_quantile\_connectedness(window=60, step=1)} produces a time series $C_t(\tau)$ at each quantile.
+\item Tracks how tail connectedness evolves over 2000--2024, spiking around crisis episodes.
+
+\end{itemize}
+\textbf{Output summary}:
+
+
+{\small
+\begin{longtable}{|l|l|l|}
+\hline
+\textbf{Output} & \textbf{What it shows} & \textbf{Format} \\
+\hline
+\endhead
+QIRF comparison plot & MP shock $\rightarrow$ HF return at $\tau = 0.05$ vs \$0.50\$ & Line chart (horizon on x-axis) \\
+\hline
+Connectedness table & $C(\tau)$ at each quantile & Single row: \$C(0.05), C(0.25), C(0.50), C(0.75), C(0.95)\$ \\
+\hline
+GFEVD heatmap & $\Theta(\tau)$ matrix at $\tau = 0.05$ vs \$0.50\$ & $7 \times 7$ heatmap (two panels) \\
+\hline
+Directional bar chart & TO, FROM, NET by variable at each quantile & Grouped bar chart \\
+\hline
+Rolling connectedness & $C_t(0.05)$ and $C_t(0.50)$ over time & Time series (2 lines) \\
+\hline
+\end{longtable}
+}
+
+\textbf{$\rightarrow$ Link to Module 4}: Module 3 shows that transmission is stronger in the tails. Module 4 tests whether NBFI leverage explains \textit{why} --- via the variance (scale) channel, not just the mean (location) channel.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 4: Location-Scale Growth-at-Risk}
+
+\textbf{Purpose}: Test whether NBFI leverage increases the \textit{conditional variance} (not just the conditional mean) of future growth outcomes, generating fatter left tails. This is the ''variance amplification'' hypothesis (H3).
+
+\textbf{Unit of observation}: Quarter \$t\$ (aggregate time series) or country \$c\$ $\times$ quarter \$t\$ (panel).
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Future GDP growth & $y_{t+h}$ & Real GDP growth at horizon \$h\$ quarters ahead & FRED (GDPC1) & Quarterly & Aggregate \\
+\hline
+Financial conditions & $\text{FCI}_t$ & Chicago Fed NFCI or composite index & FRED (NFCI) & Quarterly & Aggregate \\
+\hline
+NBFI leverage & $\text{NBFI}_t$ & Aggregate NBFI leverage (from P1 Module 1), or NBFI assets as \% of GDP (FSB) & Module 1 output; FSB & Quarterly / Annual & Aggregate \\
+\hline
+Interaction & $\text{FCI}_t \times \text{NBFI}_t$ & Tests whether the FCI effect on variance depends on NBFI size & Constructed & Quarterly & Aggregate \\
+\hline
+\end{longtable}
+}
+
+\textbf{Model specification} --- Two-step Location-Scale model:
+
+\textbf{Step 1 --- Location (conditional mean):}
+
+\[\hat{\mu}_{t+h} = E[y_{t+h} \mid X_t] = \alpha + \beta_1 \cdot \text{FCI}_t + \beta_2 \cdot \text{NBFI}_t + \beta_3 \cdot (\text{FCI}_t \times \text{NBFI}_t)\]
+
+Estimated by OLS. Residuals: $\hat{e}_{t+h} = y_{t+h} - \hat{\mu}_{t+h}$.
+
+\textbf{Step 2 --- Scale (conditional variance):}
+
+\[\log(\hat{e}_{t+h}^2) = \delta_0 + \delta_1 \cdot \text{FCI}_t + \delta_2 \cdot \text{NBFI}_t + \delta_3 \cdot (\text{FCI}_t \times \text{NBFI}_t) + v_t\]
+
+Estimated by OLS on the log-squared residuals from Step 1. This gives $\hat{\sigma}_{t+h}^2 = \exp(\hat{\delta}_0 + \hat{\delta}_1 \text{FCI}_t + \ldots)$.
+
+\textbf{Conditional quantiles} are then:
+
+\[\hat{Q}_\tau(y_{t+h} \mid X_t) = \hat{\mu}_{t+h} + \hat{\sigma}_{t+h} \cdot \Phi^{-1}(\tau)\]
+
+where $\Phi^{-1}(\tau)$ is the standard normal quantile function (or Student-t quantile for heavier tails).
+
+\textbf{Key parameters}:
+\begin{itemize}
+\item $\delta_2 > 0$: NBFI leverage \textit{increases conditional variance} of future growth (fatter tails in both directions).
+\item $\delta_3 > 0$: NBFI leverage amplifies the variance-increasing effect of tight financial conditions.
+\item Standard GaR (Adrian et al. 2019) only models the location; our LS extension separates \textit{mean shift} from \textit{variance amplification}.
+
+\end{itemize}
+\textbf{Estimation details}:
+\begin{itemize}
+\item Implemented in \texttt{location\_scale\_gar()} in \texttt{src/econometrics/location\_scale.py}.
+\item Step 1: OLS with HC1 standard errors.
+\item Step 2: OLS on log-squared residuals.
+\item Alternative: \texttt{skewt\_location\_scale\_fit()} estimates both location and scale parameters jointly via MLE assuming a Hansen (1994) skewed-t distribution (captures asymmetry).
+\item Horizons: $h \in \{1, 4, 8, 12\}$ quarters.
+\item Quantiles computed: $\tau \in \{0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95\}$.
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item \textbf{Location coefficients} ($\beta_1, \beta_2, \beta_3$): do FCI and NBFI shift the mean of future growth?
+\item \textbf{Scale coefficients} ($\delta_1, \delta_2, \delta_3$): do FCI and NBFI increase the \textit{variance} of future growth?
+\item \textbf{Fan chart}: predicted distribution of $y_{t+h}$ for different values of $\text{NBFI}_t$ --- showing that high NBFI leverage produces a \textit{wider} (fatter-tailed) distribution, not just a shifted one.
+\item \textbf{Tail risk amplification test} (\texttt{tail\_risk\_amplification()}): quantile regression with Stress $\times$ NBFI interaction at $\tau = 0.05$, confirming that the amplification is asymmetric.
+
+\end{enumerate}
+\textbf{Key contribution}: This separates two channels: (a) NBFI leverage \textit{shifts the mean} of future growth (location effect --- already in Adrian et al. 2019); (b) NBFI leverage \textit{fattens the tails} of future growth (scale effect --- \textbf{new contribution}). If $\delta_2 > 0$ but $\beta_2 \approx 0$: NBFI leverage doesn't change average growth but makes extreme outcomes more likely.
+
+\textbf{$\rightarrow$ Link to Module 5}: Module 4 shows NBFI leverage amplifies risk. Module 5 asks: why didn't this blow up in 2022--23? The answer lies in the network \textit{topology} --- within-OFI stress was high but didn't propagate to the real economy because banks acted as a firewall.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 5: Resolving the Banerjee et al. (2025) Puzzle}
+
+\textbf{Purpose}: Explain why the 2022--23 tightening cycle did \textit{not} produce a financial crisis despite high NBFI stress. Using Diebold-Yilmaz sector-level decomposition, show that within-OFI connectedness was high but OFI-to-real-economy connectedness remained low.
+
+\textbf{Unit of observation}: System of sector-level return series $\times$ week \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+OFI sector returns & $r_t^{OFI,j}$ & Returns for each OFI sub-sector \$j\$ (HFs, bond funds, MMFs, etc.) & Bloomberg / HFRX & Weekly & Sub-sector \\
+\hline
+Bank sector return & $r_t^{B}$ & Bank sector return & Bloomberg (KBW Bank Index) & Weekly & Sector \\
+\hline
+Real economy proxy & $r_t^{RE}$ & Industrial production growth, or credit growth, or non-financial corporate bond return & FRED / Bloomberg & Monthly $\rightarrow$ Weekly & Aggregate \\
+\hline
+Policy rate changes & $\Delta r_t^{MP}$ & Change in effective Fed funds rate & FRED & Monthly & Aggregate \\
+\hline
+\end{longtable}
+}
+
+\textbf{System vector}: $Y_t = (r_t^{HF}, r_t^{BondFund}, r_t^{MMF}, r_t^{IC}, r_t^{B}, r_t^{RE})'$ --- a \textbf{6-variable VAR} capturing within-OFI, OFI-to-bank, and OFI-to-real-economy links.
+
+\textbf{Model specification} --- Standard VAR(p) with Diebold-Yilmaz GFEVD:
+
+\[Y_t = c + A_1 Y_{t-1} + \ldots + A_p Y_{t-p} + u_t\]
+
+From the VAR, compute the Generalised FEVD $\Theta$ at horizon \$h\$, then decompose total connectedness into:
+
+\begin{itemize}
+\item \textbf{Within-OFI connectedness}: $C^{OFI} = \frac{1}{n_{OFI}} \sum_{i,j \in OFI, i \neq j} \theta_{ij}$ --- spillovers \textit{among} OFI sub-sectors.
+\item \textbf{OFI-to-bank connectedness}: $C^{OFI \to B} = \sum_{i \in OFI} \theta_{B,i}$ --- spillovers \textit{from} OFIs \textit{to} banks.
+\item \textbf{OFI-to-real economy connectedness}: $C^{OFI \to RE} = \sum_{i \in OFI} \theta_{RE,i}$ --- spillovers \textit{from} OFIs \textit{to} the real economy.
+
+\end{itemize}
+\textbf{Estimation details}:
+\begin{itemize}
+\item Standard VAR estimated by OLS (not quantile VAR --- this module uses mean connectedness, not tail connectedness).
+\item \texttt{compute\_connectedness()} in \texttt{src/analysis/systemic\_risk.py} with lags \$= 4\$, horizon \$h = 10\$.
+\item \texttt{aggregate\_connectedness\_by\_sector()} aggregates the $\Theta$ matrix to sector blocks.
+\item Rolling estimation (window = 60 weeks) to track how within-OFI vs. OFI-to-RE connectedness evolves over 2020--2024.
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item \textbf{Sector-block GFEVD heatmap}: shows within-OFI block is ''hot'' (high spillovers) while OFI$\rightarrow$RE block is ''cold'' (low spillovers) during 2022--23.
+\item \textbf{Rolling decomposition}: time series of $C^{OFI}_t$, $C^{OFI \to B}_t$, and $C^{OFI \to RE}_t$. Expected: within-OFI spikes in 2022 but OFI$\rightarrow$RE stays flat.
+\item \textbf{Narrative}: Post-Basel III bank capital buffers acted as a \textit{firewall}, absorbing OFI stress without transmitting it to the real economy. This is consistent with bank capital ratios remaining above regulatory minima throughout the tightening cycle.
+
+\end{enumerate}
+\textbf{Key insight}: The puzzle resolves because contagion has two stages: (1) within-NBFI stress propagation (high in 2022--23), and (2) NBFI-to-real-economy transmission (low in 2022--23 due to bank resilience). Standard measures that aggregate both stages miss this.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module Linkage Map (Project 2)}
+
+
+\begin{verbatim}
+                    +----------------------------------+
+                    |  Module 1: VaR-Constraint Channel |
+  Fed Z.1 leverage  |  beta_s procyclicality by sub-sector |    Output: beta_s ranking +
+  data              |  + Fire-sale simulation           |    amplification ratio
+                    +----------+---------+-------------+
+                               |         |
+              +----------------+         +----------------+
+              v                                           v
++------------------------------+     +--------------------------------+
+|  Module 2: DCC-GARCH         |     |  Module 3: Quantile VAR        |
+|  Time-varying correlations   |     |  Tail-specific MP transmission |
+|  (mean dynamics)             |     |  IRFs + connectedness          |
+|  Q: Do bank-NBFI corr spike |     |  Q: Is C(0.05) >> C(0.50)?    |
+|  during stress?              |     |                                |
++----------+-------------------+     +-----------+------------------+
+           | Confirms regime-                     | Confirms tail
+           | dependence                           | amplification
+           v                                      v
++------------------------------+     +--------------------------------+
+|  Module 4: Location-Scale    |     |  Module 5: Banerjee Puzzle     |
+|  GaR                         |<----|  Within-OFI vs OFI→RE         |
+|  Q: Does NBFI leverage       |     |  connectedness decomposition   |
+|  fatten tails (variance)?    |     |  Q: Why no crisis in 2022-23? |
++------------------------------+     +--------------------------------+
+\end{verbatim}
+
+
+\subsection{Data Sources \& Sample}
+
+
+{\small
+\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\hline
+\textbf{Data Source} & \textbf{Variables} & \textbf{Frequency} & \textbf{Coverage} \\
+\hline
+\endhead
+Flow of Funds (Fed Z.1) & Sector-level assets, liabilities, leverage & Quarterly & 1980--present \\
+\hline
+ECB Investment Fund Statistics & EU fund AUM, flows, leverage by type & Quarterly & 2009--present \\
+\hline
+EPFR Global & Fund flows by type, country, asset class & Weekly/Monthly & 2000--present \\
+\hline
+Bloomberg / Refinitiv & Sector return indices (HF, MMF, insurance, pension) & Daily & 2000--present \\
+\hline
+BIS Credit Statistics & Credit to private sector, spreads & Quarterly & 1999--present \\
+\hline
+FRED & Fed funds rate, term spreads, GDP, CPI & Mixed & 1960--present \\
+\hline
+Banerjee et al. (2025) & Replication data for BIS Bulletin 116 & Quarterly & 2000--2024 \\
+\hline
+\end{longtable}
+}
+
+\textbf{Sample period}: 2000Q1--2024Q4 for most modules. DCC-GARCH uses daily data (2000--2024). Quantile VAR uses quarterly data.
+
+\textbf{Sub-sector classification}: Hedge funds (HFs), money market funds (MMFs), bond mutual funds, equity mutual funds, ETFs, insurance companies (ICs), pension funds (PFs), finance companies, securitisation vehicles.
+
+
+\subsection{Literature Positioning}
+
+\begin{enumerate}
+\item \textbf{Monetary policy \& financial intermediaries}: Extends Adrian \& Shin (2010, 2014) VaR-constraint channel from banks to NBFIs. Tests whether the leverage-procyclicality mechanism operates more strongly in specific NBFI sub-sectors.
+
+\item \textbf{NBFI amplification}: Directly builds on Banerjee, Hofmann, Ng \& Pinter (2025) aggregate finding. Our sub-sector decomposition and quantile methods address their acknowledged limitation of wide confidence bands.
+
+\item \textbf{Quantile VAR}: Adapts Ando, Greenwood-Nimmo \& Shin (2022) from cross-country to cross-sector application. First use of quantile connectedness for monetary policy transmission analysis.
+
+\item \textbf{Location-scale models}: Extends Adrian, Boyarchenko \& Giannone (2019) GaR framework by modelling the scale (variance) channel separately, testing whether NBFI leverage fattens both tails.
+
+\end{enumerate}
+
+\subsection{Identification \& Robustness}
+
+\begin{itemize}
+\item \textbf{Monetary policy shock identification}: High-frequency identification (Gurkaynak, Sack \& Swanson 2005) using Fed funds futures around FOMC announcements. Robustness: Romer \& Romer (2004) narrative shocks, Jarocinski \& Karadi (2020) sign-restricted shocks.
+\item \textbf{Endogeneity of NBFI leverage}: NBFI leverage is instrumented with lagged regulatory capital ratios of connected banks (supply-side shifters).
+\item \textbf{Quantile VAR lag selection}: BIC-optimal lag length at each quantile; robustness across $p \in \{1, 2, 4\}$.
+\item \textbf{Small-sample inference}: Bootstrap confidence intervals (1000 replications) for quantile IRFs and connectedness measures.
+
+\end{itemize}
+
+\subsection{Expected Contributions}
+
+\begin{enumerate}
+\item Sub-sector decomposition: hedge funds drive amplification, pension funds dampen it.
+\item Quantile connectedness reveals tail-specific MP amplification invisible to linear methods.
+\item Location-scale evidence: NBFI leverage fattens both tails (variance effect), not just shifts the mean.
+\item Resolution of the 2022--23 resilience puzzle via network topology analysis.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\section{Project 3: Contagion Across Borders}
+
+\textbf{Subtitle:} How NBFI Stress in One Jurisdiction Spills Over via the Global Financial Cycle
+
+
+\subsection{Motivation}
+
+Cross-border NBFI linkages create a transmission mechanism for financial stress
+through three interconnected channels: (1) dollar funding, where NBFIs borrow
+in USD via repo and FX swaps; (2) portfolio rebalancing by global investment
+funds whose procyclical flows amplify local shocks; and (3) the global financial
+cycle (Rey 2013), a common factor in risky asset prices that NBFIs both respond
+to and amplify.
+
+
+\subsection{Research Questions}
+
+\textbf{RQ1.} Is cross-border NBFI connectedness asymmetric --- dramatically higher in
+the left tail (stress) than at the median (normal times)?
+
+\textbf{RQ2.} Does dollar funding stress transmit cross-border, and is this
+transmission nonlinear (stronger in the tails)?
+
+\textbf{RQ3.} Are NBFI portfolio flows more volatile and more cross-border-connected
+than bank flows?
+
+\textbf{RQ4.} Does NBFI penetration amplify the transmission of the global financial
+cycle to local financial conditions? Is this robust to IV estimation?
+
+\textbf{RQ5.} Can a hedge fund failure cascade through prime brokerage links to
+generate cross-border deleveraging?
+
+
+\subsection{Data Sources \& Sample}
+
+
+{\small
+\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\hline
+\textbf{Data Source} & \textbf{Variables} & \textbf{Frequency} & \textbf{Coverage} \\
+\hline
+\endhead
+BIS Locational Banking Stats & Cross-border claims by sector \& country & Quarterly & 2000--present \\
+\hline
+EPFR Global & Cross-border fund flows by type \& destination & Monthly & 2005--present \\
+\hline
+IMF CPIS & Portfolio investment positions by country pair & Annual & 2001--present \\
+\hline
+BIS OTC Derivatives & FX swap/forward outstanding by currency & Semiannual & 2004--present \\
+\hline
+Bloomberg & CIP basis (cross-currency basis swaps), VIX, equity indices & Daily & 2000--present \\
+\hline
+Miranda-Agrippino \& Rey (2020) & Global Financial Cycle factor (updated) & Monthly & 1990--present \\
+\hline
+FSB Global Monitoring & NBFI penetration ratio by country & Annual & 2002--present \\
+\hline
+\end{longtable}
+}
+
+\textbf{Sample period}: 2005Q1--2024Q4 for cross-country quantile connectedness (EPFR flow data availability). Extended to 2000 for GFC panel regressions using BIS data.
+
+\textbf{Country coverage}: G20 + selected financial centres (US, UK, EA, JP, CH, AU, CA, KR, SG, HK, BR, MX, IN, ZA, TR, RU, CN). Separate EME sub-sample for GFC amplification tests.
+
+
+\subsection{Literature Positioning}
+
+\begin{enumerate}
+\item \textbf{Global financial cycle}: Extends Rey (2013) and Miranda-Agrippino \& Rey (2020) by testing whether NBFI penetration amplifies GFC transmission. First causal evidence using IV (US monetary policy shocks $\rightarrow$ GFC $\rightarrow$ local conditions, with NBFI interaction).
+
+\item \textbf{Cross-border contagion}: Complements Forbes \& Warnock (2012) on capital flow surges/stops and Broner, Didier, Erce \& Schmukler (2013) on gross flows. Adds NBFI-specific decomposition and quantile methods.
+
+\item \textbf{Dollar funding}: Builds on Avdjiev, Du, Koch \& Shin (2019) and Eguren-Martin, Ossandon Busch \& Reinhardt (2024) on dollar funding channels. Tests nonlinear transmission via quantile regression.
+
+\item \textbf{Network contagion}: Agent-based simulation follows Eisenberg \& Noe (2001) clearing mechanism with Kyle (1985) price impact, extending Cont \& Schaanning (2017) fire-sale framework to cross-border setting.
+
+\end{enumerate}
+
+\subsection{Identification \& Robustness}
+
+\begin{itemize}
+\item \textbf{IV for GFC factor}: US monetary policy shocks (Jarocinski \& Karadi 2020) instrument the GFC, addressing reverse causality from local conditions to global factor.
+\item \textbf{NBFI penetration endogeneity}: NBFI share instrumented with (a) legal origin (La Porta et al. 1998) for cross-section, (b) lagged pension reform dummies for within-country variation.
+\item \textbf{Alternative connectedness measures}: Barunik \& Krehlik (2018) frequency-domain connectedness as robustness check on time-domain results.
+\item \textbf{EME vs AE heterogeneity}: Full interaction models allowing different coefficients for advanced and emerging economies.
+
+\end{itemize}
+
+\subsection{Empirical Strategy}
+
+Project 3 traces three contagion channels, then unifies them in a quantile connectedness framework and a cascade simulation.
+
+
+\begin{verbatim}
+Channel 1 (Dollar Funding)  -+
+Channel 2 (Portfolio Flows)  -+--→  Module 4 (Cross-Country QVAR)  --→  Module 5 (GFC Amplification Panel)  --→  Module 6 (Cascade Sim)
+Channel 3 (Global Fin Cycle) -+
+\end{verbatim}
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 1: Dollar Funding Channel}
+
+\textbf{Purpose}: Test whether FX swap basis (dollar funding stress) transmits cross-border via NBFI deleveraging, and whether this transmission is nonlinear (stronger in the tails).
+
+\textbf{Unit of observation}: Currency pair \$c\$ $\times$ month \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+CIP basis & $\text{CIP}_{c,t}$ & Cross-currency basis swap spread for currency \$c\$ vs USD (3-month tenor). Negative = dollar funding premium & Bloomberg & Daily $\rightarrow$ Monthly avg & Currency pair \\
+\hline
+NBFI leverage & $\text{NBFI}_{c,t}$ & NBFI assets as \% of GDP in country \$c\$ & FSB Global Monitoring Report & Annual (interpolated to quarterly) & Country \\
+\hline
+VIX & $\text{VIX}_t$ & CBOE Volatility Index & FRED & Daily $\rightarrow$ Monthly avg & Global \\
+\hline
+USD broad index & --- & Trade-weighted USD index & FRED (DTWEXBGS) & Daily $\rightarrow$ Monthly avg & Global \\
+\hline
+Local equity return & $r_{c,t}^{EQ}$ & Country \$c\$ equity index return & Bloomberg & Daily $\rightarrow$ Monthly & Country \\
+\hline
+\end{longtable}
+}
+
+\textbf{Model specification} --- Quantile regression:
+
+\[Q_\tau(\text{CIP}_{c,t}) = \alpha_c + \beta_1(\tau) \cdot \text{VIX}_t + \beta_2(\tau) \cdot r_{c,t}^{EQ} + \beta_3(\tau) \cdot \text{NBFI}_{c,t} + \beta_4(\tau) \cdot (\text{VIX}_t \times \text{NBFI}_{c,t}) + \varepsilon_{c,t}\]
+
+\textbf{Key test}: $\beta_4(\tau = 0.05) \neq 0$ but $\beta_4(\tau = 0.50) \approx 0$. Countries with higher NBFI penetration suffer \textit{larger} CIP blowouts during stress --- but not during normal times.
+
+\textbf{Estimation}: \texttt{statsmodels.QuantReg} at $\tau \in \{0.05, 0.25, 0.50, 0.75, 0.95\}$, with country fixed effects. Standard errors clustered by country.
+
+\textbf{Output}: Coefficient table across quantiles; scatter plot of CIP basis vs. VIX for high- vs. low-NBFI countries.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 2: Portfolio Flow Channel}
+
+\textbf{Purpose}: Compare the volatility and cross-border connectedness of NBFI portfolio flows vs. bank flows.
+
+\textbf{Unit of observation}: Country \$c\$ $\times$ month \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+NBFI portfolio flows & $F_{c,t}^{NBFI}$ & Net cross-border fund flows (equity + bond funds) to country \$c\$ & EPFR Global & Monthly & Country \\
+\hline
+Bank flows & $F_{c,t}^{Bank}$ & Cross-border bank claims on country \$c\$ (change) & BIS Locational Banking Stats & Quarterly $\rightarrow$ Monthly (interp) & Country \\
+\hline
+VIX & --- & Stress proxy & FRED & Monthly & Global \\
+\hline
+GFC factor & $\text{GFC}_t$ & Global financial cycle (from Module 3 below) & PCA extraction & Monthly & Global \\
+\hline
+\end{longtable}
+}
+
+\textbf{Analysis 1 --- Volatility comparison}: Compute rolling 12-month standard deviation of $F^{NBFI}_{c,t}$ vs. $F^{Bank}_{c,t}$ for each country. Test: $\sigma(F^{NBFI}) > \sigma(F^{Bank})$?
+
+\textbf{Analysis 2 --- Diebold-Yilmaz connectedness on cross-country flows}:
+
+System: $Y_t = (F_{US,t}^{NBFI}, F_{UK,t}^{NBFI}, F_{EA,t}^{NBFI}, F_{JP,t}^{NBFI}, F_{EM,t}^{NBFI})'$ --- a 5-variable VAR of NBFI flows across major regions.
+
+Estimate VAR(4) and compute GFEVD at \$h = 10\$. Then repeat with bank flows. Compare: is total connectedness of NBFI flows higher than bank flows?
+
+\textbf{Estimation}: OLS VAR with \texttt{compute\_connectedness()} from \texttt{src/analysis/systemic\_risk.py}. Rolling window (60 months) for time-varying comparison.
+
+\textbf{Output}:
+\begin{enumerate}
+\item Bar chart: average flow volatility for NBFI vs. bank flows, by country group.
+\item Total connectedness comparison: $C^{NBFI}$ vs. $C^{Bank}$ --- expected: NBFI flows are more connected.
+\item Rolling connectedness plot: NBFI flow connectedness spiking during 2008, 2013, 2020.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 3: Global Financial Cycle (GFC) Factor Extraction}
+
+\textbf{Purpose}: Extract the common factor driving international risky asset prices (Miranda-Agrippino \& Rey 2020) and test whether NBFI penetration amplifies its transmission to local financial conditions.
+
+\textbf{Unit of observation}: Global factor $\times$ month \$t\$ (extraction); Country \$c\$ $\times$ quarter \$t\$ (amplification test).
+
+\textbf{Input variables for factor extraction}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+International equity returns & $r_{c,t}$ & Monthly equity index returns for \$N\$ countries & Bloomberg / MSCI country indices & Monthly & Country \\
+\hline
+\end{longtable}
+}
+
+\textbf{Countries}: US, UK, Germany, France, Japan, Canada, Australia, Korea, Singapore, Hong Kong, Brazil, Mexico, India, South Africa, Turkey + possibly China, Russia (20+ countries).
+
+\textbf{Factor extraction}:
+\begin{enumerate}
+\item Standardise each country's monthly equity returns: $\tilde{r}_{c,t} = (r_{c,t} - \bar{r}_c) / \sigma_c$.
+\item Apply PCA to the $N \times T$ matrix of standardised returns.
+\item The first principal component $\text{GFC}_t = \text{PC}_1(t)$ is the global financial cycle factor.
+
+\end{enumerate}
+\textbf{Estimation details}:
+\begin{itemize}
+\item \texttt{extract\_global\_factor()} in \texttt{src/analysis/global\_financial\_cycle.py}.
+\item Uses \texttt{sklearn.decomposition.PCA} after \texttt{StandardScaler}.
+\item Typically $\text{PC}_1$ explains 30--40\% of total variance across countries.
+\item Rolling version: \texttt{rolling\_global\_factor(window=252, step=21)} re-estimates PCA on rolling windows.
+
+\end{itemize}
+\textbf{Output}: Monthly time series $\{\text{GFC}_t\}$ --- a single global factor. Plus: loadings per country (which countries load most heavily on the GFC) and explained variance ratio.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 4: Cross-Country Quantile Connectedness}
+
+\textbf{Purpose}: Test whether cross-border financial connectedness is asymmetric --- dramatically higher in the left tail than at the median.
+
+\textbf{Unit of observation}: System of \$k\$ country returns $\times$ week \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Country equity returns & $r_{c,t}$ & Weekly log-returns for major equity indices & Bloomberg & Weekly & Country \\
+\hline
+USD funding proxy & $\text{USD}_t$ & Change in trade-weighted USD index or 3M CIP basis & Bloomberg / FRED & Weekly & Global \\
+\hline
+\end{longtable}
+}
+
+\textbf{System}: $Y_t = (r_t^{US}, r_t^{UK}, r_t^{EU}, r_t^{JP}, r_t^{EM}, \text{USD}_t)'$ --- a \textbf{6-variable Quantile VAR} of cross-country returns plus dollar funding.
+
+\textbf{Model specification} --- identical to P2 Module 3 (QVAR):
+
+\[Q_{\tau}(y_{i,t} \mid Y_{t-1}, \ldots, Y_{t-p}) = c_i(\tau) + \sum_{j=1}^{6} \sum_{l=1}^{p} \beta_{ij}^{(l)}(\tau) \, y_{j,t-l}\]
+
+\textbf{Estimation}: Equation-by-equation \texttt{QuantReg}, lags \$p = 4\$, quantiles $\tau \in \{0.05, 0.50, 0.95\}$, GFEVD at \$h = 10\$.
+
+\textbf{Key prediction}: Total connectedness at $\tau = 0.05 \gg \tau = 0.50$ --- cross-border contagion is much stronger during stress.
+
+\textbf{Rolling version}: Window = 60 weeks, step = 1. Time series of $C_t(0.05)$ and $C_t(0.50)$ through GFC 2008, Taper Tantrum 2013, COVID 2020.
+
+\textbf{Output}:
+\begin{enumerate}
+\item Total connectedness at each quantile: \$C(0.05)\$, \$C(0.50)\$, \$C(0.95)\$.
+\item Pairwise GFEVD matrices at $\tau = 0.05$ vs. \$0.50\$ (heatmaps).
+\item Directional spillovers: which countries are net transmitters of tail risk.
+\item Rolling plot: $C_t(0.05)$ and $C_t(0.50)$ over time.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 5: GFC Amplification Panel Regression}
+
+\textbf{Purpose}: Test whether NBFI penetration amplifies the transmission of the Global Financial Cycle to local financial conditions. This is the causal core of Project 3.
+
+\textbf{Unit of observation}: Country \$c\$ $\times$ quarter \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Local credit growth & $y_{c,t}$ & Credit-to-GDP growth or local equity return & BIS Credit Statistics; Bloomberg & Quarterly & Country \\
+\hline
+GFC factor & $\text{GFC}_t$ & From Module 3 & Module 3 output & Monthly $\rightarrow$ Quarterly & Global \\
+\hline
+NBFI penetration & $\text{NBFI}_{c,t}$ & NBFI assets as \% of GDP in country \$c\$ & FSB Global Monitoring Report & Annual (interp. to quarterly) & Country \\
+\hline
+Interaction & $\text{GFC}_t \times \text{NBFI}_{c,t}$ & Tests amplification & Constructed & Quarterly & Country \\
+\hline
+Bank-NBFI connectedness & $\text{Conn}_{c,t}$ & Bilateral bank-NBFI exposure (from BIS) or rolling Granger-causality measure & BIS / constructed & Quarterly & Country \\
+\hline
+\end{longtable}
+}
+
+\textbf{Model specification --- OLS panel}:
+
+\[y_{c,t} = \alpha_c + \beta_1 \cdot \text{GFC}_t + \beta_2 \cdot \text{NBFI}_{c,t} + \beta_3 \cdot (\text{GFC}_t \times \text{NBFI}_{c,t}) + \gamma \cdot X_{c,t} + \varepsilon_{c,t}\]
+
+where $\alpha_c$ = country fixed effects.
+
+\textbf{Key parameter}: $\beta_3$. If $\beta_3 > 0$: countries with larger NBFI sectors experience \textit{stronger} transmission of the global financial cycle to local credit conditions. This is the amplification effect.
+
+\textbf{IV specification} (addresses endogeneity of GFC --- reverse causality from local conditions to global factor):
+
+\begin{itemize}
+\item \textbf{Instrument}: US monetary policy shocks (Jarocinski \& Karadi 2020 high-frequency identification).
+\item \textbf{First stage}: $\text{GFC}_t = \pi_0 + \pi_1 \cdot \text{USMPshock}_t + v_t$.
+\item \textbf{Second stage}: $y_{c,t} = \alpha_c + \beta_1 \cdot \widehat{\text{GFC}}_t + \beta_2 \cdot \text{NBFI}_{c,t} + \beta_3 \cdot (\widehat{\text{GFC}}_t \times \text{NBFI}_{c,t}) + \varepsilon_{c,t}$.
+\item \textbf{Relevance}: First-stage F-statistic \$> 10\$ (strong instrument).
+
+\end{itemize}
+\textbf{NBFI penetration endogeneity}: NBFI share instrumented with (a) legal origin (La Porta et al. 1998) for cross-section, (b) lagged pension reform dummies for within-country variation.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item OLS: \texttt{panel\_gfc\_regression()} in \texttt{src/analysis/global\_financial\_cycle.py}. Country fixed effects via dummy variables. Standard errors clustered by country.
+\item IV: \texttt{iv\_gfc\_regression()} --- manual 2SLS (first stage, fitted values, second stage). Reports first-stage F-stat.
+\item Alternative: \texttt{connectedness\_amplification\_test()} replaces NBFI size with bank-NBFI \textit{connectedness} as the interaction variable (tests whether network structure, not just NBFI size, matters).
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item OLS coefficient table: $\beta_1, \beta_2, \beta_3$ with standard errors, p-values.
+\item IV coefficient table: same structure with 2SLS estimates.
+\item Scatter plot: GFC factor vs. local credit growth, split by high- vs. low-NBFI countries.
+\item Interpretation: e.g., ''A 1-SD negative GFC shock reduces credit growth by 0.5 pp in low-NBFI countries but by 1.2 pp in high-NBFI countries.''
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module 6: Contagion Cascade Simulation}
+
+\textbf{Purpose}: Agent-based simulation of a cross-border contagion event: US hedge fund failure $\rightarrow$ prime broker losses $\rightarrow$ multi-round forced deleveraging $\rightarrow$ cross-border loss propagation.
+
+\textbf{Unit of observation}: Simulated agents (hedge funds, prime brokers, banks across countries).
+
+\textbf{Input variables (calibration)}:
+
+
+{\small
+\begin{longtable}{|l|l|l|}
+\hline
+\textbf{Parameter} & \textbf{Value} & \textbf{Source} \\
+\hline
+\endhead
+US hedge fund sector & 20 funds, NAV \$2M total, leverage 3--15$\times$ & Calibrated from SEC Form PF \\
+\hline
+Prime brokers & GS, JPM, MS, CS, DB & Major PB list \\
+\hline
+Market depth & \$300K & Calibrated to average equity market depth \\
+\hline
+Margin requirement & 10\% of gross exposure & Industry standard \\
+\hline
+Margin procyclicality & 0.5 (margin rises 50\% of price drop) & Brunnermeier \& Pedersen (2009) \\
+\hline
+Initial shock & -4\% across all assets & Scenario \\
+\hline
+\end{longtable}
+}
+
+\textbf{Simulation mechanism} (Eisenberg-Noe 2001 + Kyle 1985):
+\begin{enumerate}
+\item Exogenous shock to hedge fund portfolios (-4\%).
+\item Funds with insufficient margin receive margin calls from prime brokers.
+\item Funds that cannot meet margin are forced to deleverage: sell assets proportional to excess leverage.
+\item Aggregate selling $\rightarrow$ price impact $\rightarrow$ further losses $\rightarrow$ more margin calls.
+\item Funds that default impose credit losses on their prime brokers.
+\item Prime brokers (which are cross-border banks) transmit losses to other jurisdictions.
+\item Iterate until convergence or max rounds.
+
+\end{enumerate}
+\textbf{Estimation details}: Implemented via \texttt{PrimeBrokerageContagion} class in \texttt{src/models/nbfi\_subsectors.py}. \texttt{build\_hedge\_fund\_sector()} creates the fund universe. \texttt{.run(initial\_shock=-0.04)} executes the cascade.
+
+\textbf{Output}:
+\begin{enumerate}
+\item Round-by-round dynamics: market price, total NAV, gross exposure, average leverage, fund defaults, PB losses.
+\item Cross-border decomposition: which prime brokers (and hence which countries) absorb the most losses.
+\item 3-panel chart: NAV path, leverage path, default count.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module Linkage Map (Project 3)}
+
+
+\begin{verbatim}
++-----------------+  +-----------------+  +-----------------+
+| Module 1: Dollar |  | Module 2: Port. |  | Module 3: GFC   |
+| Funding Channel  |  | Flow Channel    |  | Factor Extract  |
+| CIP basis x NBFI|  | NBFI vs bank    |  | PCA on intl     |
+| quantile regr.   |  | flow connect.   |  | equity returns  |
++--------+--------+  +--------+--------+  +--------+--------+
+         |                    |                     |
+         +------------+-------+                     |
+                      v                             |
+         +------------------------+                 |
+         | Module 4: Cross-Country|                 |
+         | Quantile Connectedness |                 |
+         | QVAR on country returns|                 |
+         | C(0.05) >> C(0.50)?   |                 |
+         +------------+-----------+                 |
+                      |                             |
+                      v                             v
+         +------------------------------------------------+
+         | Module 5: GFC Amplification Panel              |
+         | y_ct = alpha_c + beta_1*GFC + beta_2*NBFI + beta_3*(GFCxNBFI)|
+         | OLS + IV (US MP shocks)                        |
+         +--------------------+---------------------------+
+                              |
+                              v
+         +------------------------------------------------+
+         | Module 6: Cascade Simulation                   |
+         | HF failure → PB losses → cross-border          |
+         | deleveraging (Eisenberg-Noe + Kyle)            |
+         +------------------------------------------------+
+\end{verbatim}
+
+
+\subsection{Expected Contributions}
+
+\begin{enumerate}
+\item Left-tail connectedness across borders is 40--60\% higher than median connectedness.
+\item NBFI portfolio flows are systematically more volatile and more cross-border-connected than bank flows.
+\item NBFI penetration amplifies GFC transmission to local credit conditions (robust to IV with US MP shocks).
+\item Location-scale evidence: NBFI flows fatten the tails of EME return distributions.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\section{Project 4: FX Hedging as a Contagion Channel}
+
+\textbf{Subtitle:} How NBFI Currency Risk Management Transmits Global Financial Shocks
+
+
+\subsection{Motivation}
+
+The global FX derivatives market has grown to \$75 trillion in outstanding
+notional (BIS OTC statistics, end-2024), driven primarily by NBFIs hedging
+cross-border bond investments. Combining Rey, Stavrakeva \& Tang (2024) on
+currency centrality with Nenova, Schrimpf \& Shin (2025) on FX derivatives and
+NBFI hedging, we identify a complete contagion channel:
+
+\textbf{Equity shocks $\rightarrow$ FX movements $\rightarrow$ hedging cost changes $\rightarrow$ NBFI portfolio adjustment $\rightarrow$ cross-border bond flow reversal $\rightarrow$ feedback to asset prices}
+
+Critically, yield curve movements partially offset FX-induced hedging cost
+changes in normal times (self-stabilising), but during stress all forces
+reinforce --- creating nonlinear amplification detectable only through quantile
+methods.
+
+
+\subsection{Data Sources \& Sample}
+
+
+{\small
+\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\hline
+\textbf{Data Source} & \textbf{Variables} & \textbf{Frequency} & \textbf{Coverage} \\
+\hline
+\endhead
+BIS OTC Derivatives Stats & FX swap/forward outstanding by currency \& sector & Semiannual & 2004--present \\
+\hline
+Bloomberg & Cross-currency basis swaps (3M, 1Y, 5Y), equity indices, VIX & Daily & 2000--present \\
+\hline
+Refinitiv & Government bond yields (2Y, 5Y, 10Y) for 20+ countries & Daily & 2000--present \\
+\hline
+EPFR Global & Cross-border bond fund flows by country & Monthly & 2005--present \\
+\hline
+IMF CPIS & Cross-border bond holdings by country pair & Annual & 2001--present \\
+\hline
+Rey, Stavrakeva \& Tang (2024) & Currency centrality measures, replication data & Monthly & 1999--2023 \\
+\hline
+Nenova, Schrimpf \& Shin (2025) & FX derivatives and NBFI hedging data & Quarterly & 2010--2024 \\
+\hline
+\end{longtable}
+}
+
+\textbf{Sample period}: 2005M1--2024M12 for quantile regressions (cross-currency basis swap availability). Semiannual panel for BIS derivatives data.
+
+\textbf{Currency pairs}: USD/EUR, USD/JPY, USD/GBP, USD/AUD, USD/CAD, USD/CHF (G10 majors) + USD/KRW, USD/MXN, USD/BRL, USD/ZAR (key EME pairs with liquid CIP basis data).
+
+
+\subsection{Literature Positioning}
+
+\begin{enumerate}
+\item \textbf{FX hedging and financial stability}: Directly integrates two recent contributions --- Rey, Stavrakeva \& Tang (2024) on equity-FX transmission and currency centrality, and Nenova, Schrimpf \& Shin (2025) on FX derivatives and NBFI hedging demand. The ''offsetting forces'' hypothesis is our key theoretical contribution.
+
+\item \textbf{CIP deviations}: Extends Du, Tepper \& Verdelhan (2018) and Avdjiev, Du, Koch \& Shin (2019) on post-GFC CIP violations. We show that CIP deviations are not just a funding cost anomaly but a systemic risk transmission channel during stress.
+
+\item \textbf{Delta-CoVaR}: Applies Adrian \& Brunnermeier (2016) to the FX hedging channel specifically. First application of CoVaR to measure systemic contribution of a specific transmission mechanism rather than an institution.
+
+\item \textbf{Maturity mismatch}: Builds on Brunnermeier, Nagel \& Pedersen (2009) carry trade analysis. NBFI hedging mismatch (3-month FX swaps rolled to hedge 10-year bond positions) creates systemic rollover risk analogous to bank maturity mismatch.
+
+\end{enumerate}
+
+\subsection{Identification \& Robustness}
+
+\begin{itemize}
+\item \textbf{Offsetting forces test}: Formal Wald test of $H_0: \beta_4(\tau=0.05) = \beta_4(\tau=0.50)$ using Koenker \& Bassett (1982) framework. Bootstrap p-values for interquantile differences.
+\item \textbf{Endogeneity of CIP basis}: CIP basis instrumented with central bank swap line announcements (exogenous supply-side shocks to FX funding).
+\item \textbf{Hedging demand proxy}: NBFI cross-border bond holdings (IMF CPIS) $\times$ average hedge ratio (BIS survey) as measure of hedging demand.
+\item \textbf{Alternative stress measures}: Results robust to replacing VIX with MOVE (bond volatility), TED spread, or financial conditions indices.
+
+\end{itemize}
+
+\subsection{Research Questions}
+
+\textbf{RQ1.} Do the offsetting forces between equity-driven FX movements and yield
+curve dynamics break down in the tails of the distribution? (Quantile regression
+of CIP basis.)
+
+\textbf{RQ2.} Does FX hedging stress have systemic risk implications for cross-border
+bond flows? (Delta-CoVaR framework.)
+
+\textbf{RQ3.} Does the equity-FX-CIP-bonds transmission chain activate asymmetrically
+during crises versus normal times? (Quantile connectedness: $\tau = 0.05$ vs $\tau = 0.50$.)
+
+\textbf{RQ4.} Do countries with higher NBFI penetration experience stronger contagion
+through the FX hedging channel? (Panel regression with NBFI interaction + IV.)
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\section{Timeline \& Deliverables}
+
+
+{\small
+\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\hline
+\textbf{Phase} & \textbf{Period} & \textbf{Projects} & \textbf{Deliverables} \\
+\hline
+\endhead
+\textbf{Phase 1} & Q1--Q2 2026 & P1 + P2 (parallel) & Working papers; P1 implied leverage dataset; P2 quantile connectedness estimates \\
+\hline
+\textbf{Phase 2} & Q3--Q4 2026 & P3 + P4 (parallel) & Working papers; P3 cross-country connectedness database; P4 offsetting forces evidence \\
+\hline
+\textbf{Phase 3} & Q1 2027 & Integration & Synthesis paper linking all four projects; unified policy brief \\
+\hline
+\textbf{Ongoing} & Throughout & All & Conference presentations, seminar feedback, revisions \\
+\hline
+\end{longtable}
+}
+
+\textbf{Sequencing rationale}: P1 and P2 can proceed in parallel (different data, complementary methods). P3 and P4 benefit from P1/P2 outputs (leverage estimates, sub-sector results) but can begin data assembly immediately. The integration phase produces the synthesis that ties all four dimensions together.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\section{Policy Implications}
+
+The research programme speaks directly to ongoing regulatory debates:
+
+\begin{enumerate}
+\item \textbf{NBFI leverage monitoring (P1)}: The implied leverage measure and HLI provide regulators with a prototype monitoring tool that complements existing FSB surveillance. Could inform the design of NBFI leverage reporting requirements currently under discussion (FSB 2023 NBFI roadmap).
+
+\item \textbf{Monetary policy \& financial stability (P2)}: Evidence that NBFI leverage amplifies MP transmission --- particularly in the tails --- has implications for how central banks calibrate tightening cycles. The 2022--23 resilience finding suggests post-GFC bank regulation worked but created new vulnerabilities in the NBFI sector.
+
+\item \textbf{Cross-border macroprudential coordination (P3)}: If NBFI penetration amplifies GFC transmission, countries with large NBFI sectors face stronger exposure to external financial shocks. Supports arguments for cross-border macroprudential coordination (e.g., reciprocity of countercyclical capital buffers for NBFI exposures).
+
+\item \textbf{FX derivatives regulation (P4)}: The maturity mismatch in NBFI FX hedging (3-month swaps for 10-year bonds) creates systemic rollover risk. Supports proposals for longer-tenor hedging requirements or margin buffers calibrated to stress scenarios.
+
+\item \textbf{Data gaps (all projects)}: All four projects highlight the inadequacy of current NBFI data. Supports FSB/BIS initiatives for enhanced NBFI reporting, particularly on leverage, counterparty exposures, and cross-border linkages.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\section{References (Selected)}
+
+\begin{itemize}
+\item Acemoglu, D., Ozdaglar, A., \& Tahbaz-Salehi, A. (2015). Systemic risk and stability in financial networks. \textit{American Economic Review}, 105(2), 564--608.
+\item Adrian, T., \& Brunnermeier, M. K. (2016). CoVaR. \textit{American Economic Review}, 106(7), 1705--1741.
+\item Adrian, T., Boyarchenko, N., \& Giannone, D. (2019). Vulnerable growth. \textit{American Economic Review}, 109(4), 1263--1289.
+\item Adrian, T., \& Shin, H. S. (2010). Liquidity and leverage. \textit{Journal of Financial Intermediation}, 19(3), 418--437.
+\item Ando, T., Greenwood-Nimmo, M., \& Shin, Y. (2022). Quantile connectedness: Modeling tail behavior in the topology of financial networks. \textit{Management Science}, 68(4), 2401--2431.
+\item Avdjiev, S., Du, W., Koch, C., \& Shin, H. S. (2019). The dollar, bank leverage, and deviations from covered interest parity. \textit{American Economic Review: Insights}, 1(2), 193--208.
+\item Banerjee, R., Hofmann, B., Ng, A., \& Pinter, J. (2025). Non-bank financial intermediaries and financial stability. \textit{BIS Bulletin}, 116.
+\item Du, W., Tepper, A., \& Verdelhan, A. (2018). Deviations from covered interest rate parity. \textit{Journal of Finance}, 73(3), 915--957.
+\item Eisenberg, L., \& Noe, T. H. (2001). Systemic risk in financial systems. \textit{Management Science}, 47(2), 236--249.
+\item Forbes, K. J., \& Warnock, F. E. (2012). Capital flow waves: Surges, stops, flight, and retrenchment. \textit{Journal of International Economics}, 88(2), 235--251.
+\item Greenwood, R., Landier, A., \& Thesmar, D. (2015). Vulnerable banks. \textit{Journal of Financial Economics}, 115(3), 471--485.
+\item Miranda-Agrippino, S., \& Rey, H. (2020). US monetary policy and the global financial cycle. \textit{Review of Economic Studies}, 87(6), 2754--2776.
+\item Nenova, T., Schrimpf, A., \& Shin, H. S. (2025). FX derivatives and NBFI hedging. \textit{BIS Working Paper}.
+\item Rey, H. (2013). Dilemma not trilemma: The global financial cycle and monetary policy independence. \textit{Jackson Hole Symposium}.
+\item Rey, H., Stavrakeva, V., \& Tang, J. (2024). Currency centrality and the exchange rate channel. \textit{Working Paper}.
+
+\end{itemize}
+
+\subsection{Empirical Strategy}
+
+Project 4 has \textbf{three analytical layers} plus a \textbf{cascade simulation} and an \textbf{NBFI amplification panel}. The three layers test the ''offsetting forces'' hypothesis at increasing levels of complexity.
+
+
+\begin{verbatim}
+Layer 1 (Quantile Regression)  --→  Layer 2 (Delta-CoVaR)  --→  Layer 3 (Quantile Connectedness)  --→  NBFI Panel  --→  Cascade Sim
+         ↓                                  ↓                              ↓                              ↓                  ↓
+   Offsetting forces:              Systemic risk of           Full transmission         Countries with        Multi-round
+   interaction breaks              FX hedging stress          chain dormant at          higher NBFI           equity → FX →
+   down in tails                   on bond flows              median, active            suffer more           CIP → bonds
+                                                              at tau=0.05                                      feedback loop
+\end{verbatim}
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{The Offsetting Forces Hypothesis}
+
+Before detailing each layer, the key economic mechanism:
+
+
+{\small
+\begin{longtable}{|l|l|l|}
+\hline
+\textbf{Force} & \textbf{Normal Times} & \textbf{Stress} \\
+\hline
+\endhead
+Equity $\rightarrow$ FX (Rey et al. 2024) & USD appreciates moderately & USD appreciates violently (safe haven) \\
+\hline
+Yield curve (Nenova et al. 2025) & Steepens $\rightarrow$ attractive hedged carry & Flattens/inverts $\rightarrow$ carry disappears \\
+\hline
+CIP deviations & Small $\rightarrow$ manageable hedging cost & Blow out $\rightarrow$ prohibitive cost \\
+\hline
+\textbf{Net effect} & \textbf{Partially offsetting $\rightarrow$ self-stabilising} & \textbf{All reinforcing $\rightarrow$ amplification} \\
+\hline
+\end{longtable}
+}
+
+In normal times, an equity shock that depresses foreign currencies (making hedging costlier) is partially offset by yield curve movements that make hedged carry more attractive. In stress, \textit{all three forces move in the same direction} --- creating nonlinear amplification.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Layer 1: Quantile Regression --- Offsetting Forces Test}
+
+\textbf{Purpose}: Test whether the interaction between equity shocks and FX volatility has a different effect on CIP basis at the median vs. the tails. If ''offsetting forces'' break down in the tails, the interaction coefficient should be near zero at $\tau = 0.50$ but large at $\tau = 0.05$ and $\tau = 0.95$.
+
+\textbf{Unit of observation}: Currency pair \$c\$ $\times$ month \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+CIP basis & $\text{CIP}_{c,t}$ & Cross-currency basis swap spread (3M tenor) for currency \$c\$ vs USD & Bloomberg (3M XCCY basis) & Daily $\rightarrow$ Monthly & Currency pair \\
+\hline
+US equity return & $\text{Equity}_t$ & S\&P 500 monthly log-return & Bloomberg & Daily $\rightarrow$ Monthly & US \\
+\hline
+Slope differential & $\text{SlopeDiff}_{c,t}$ & (10Y-2Y yield in country \$c\$) minus (10Y-2Y yield in US) & Refinitiv / Bloomberg & Daily $\rightarrow$ Monthly & Currency pair \\
+\hline
+VIX & $\text{VIX}_t$ & CBOE Volatility Index (monthly average) & FRED (VIXCLS) & Daily $\rightarrow$ Monthly & Global \\
+\hline
+Interaction & $\text{Equity}_t \times \text{VIX}_t$ & Tests whether equity impact on CIP is amplified during stress & Constructed & Monthly & Global \\
+\hline
+\end{longtable}
+}
+
+\textbf{Currency pairs}: EUR/USD, GBP/USD, JPY/USD, CHF/USD, AUD/USD (G10 majors) + KRW/USD, MXN/USD, BRL/USD, ZAR/USD (key EME pairs with liquid basis data).
+
+\textbf{Model specification}:
+
+\[Q_{\tau}(\text{CIP}_{c,t}) = \alpha_c(\tau) + \beta_1(\tau) \cdot \text{Equity}_t + \beta_2(\tau) \cdot \text{SlopeDiff}_{c,t} + \beta_3(\tau) \cdot \text{VIX}_t + \beta_4(\tau) \cdot (\text{Equity}_t \times \text{VIX}_t) + \varepsilon_{c,t}\]
+
+\textbf{Key parameter}: $\beta_4(\tau)$ --- the interaction between equity shocks and VIX.
+\begin{itemize}
+\item At $\tau = 0.50$: expect $\beta_4 \approx 0$ (offsetting forces cancel).
+\item At $\tau = 0.05$ (left tail) and $\tau = 0.95$ (right tail): expect $|\beta_4|$ large and significant (forces reinforce during extreme events).
+
+\end{itemize}
+\textbf{Estimation details}:
+\begin{itemize}
+\item \texttt{quantile\_cip\_regression()} in \texttt{src/analysis/fx\_hedging\_contagion.py}.
+\item \texttt{statsmodels.QuantReg} estimated at $\tau \in \{0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95\}$.
+\item Currency fixed effects ($\alpha_c$) included.
+\item \texttt{asymmetry\_test()} performs a formal Wald-type test: $H_0: \beta_4(0.05) = \beta_4(0.50)$, using bootstrap standard errors for interquantile inference.
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item Coefficient table: $\beta_1(\tau), \ldots, \beta_4(\tau)$ across all quantiles with standard errors and p-values.
+\item Key comparison: $\beta_4(0.05)$ vs. $\beta_4(0.50)$ --- the ''offsetting forces breakdown'' test.
+\item Wald test p-value for interquantile difference.
+\item Plot: $\beta_4(\tau)$ across quantiles with confidence bands (should be flat near zero at the median but diverge at the tails).
+
+\end{enumerate}
+\textbf{$\rightarrow$ Link to Layer 2}: Layer 1 shows the mechanism exists. Layer 2 quantifies its \textit{systemic risk implication} --- how much does FX hedging stress spill over to bond flows?
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Layer 2: Delta-CoVaR (Adrian \& Brunnermeier 2016)}
+
+\textbf{Purpose}: Measure the systemic risk contribution of FX hedging stress to cross-border bond flows. A large negative $\Delta$-CoVaR means that when the CIP basis is in its stressed state, the left tail of bond flows is significantly worse than when the CIP basis is at its median.
+
+\textbf{Unit of observation}: Currency pair \$c\$ $\times$ month \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Bond flows & $F_{c,t}^{Bond}$ & Net cross-border bond fund flows to country \$c\$ & EPFR Global & Monthly & Country \\
+\hline
+CIP basis & $\text{CIP}_{c,t}$ & Same as Layer 1 & Bloomberg & Monthly & Currency pair \\
+\hline
+\end{longtable}
+}
+
+\textbf{Model specification} --- Two-step quantile regression:
+
+\textbf{Step 1}: Estimate the 5th percentile of the CIP basis:
+\[Q_{0.05}(\text{CIP}_{c,t}) = \alpha + \gamma' Z_t\]
+
+This defines the ''stressed'' state: $\text{CIP}_{c,t} = Q_{0.05}(\text{CIP})$.
+
+\textbf{Step 2}: Estimate the 5th percentile of bond flows conditional on the CIP basis:
+\[Q_{0.05}(F_{c,t}^{Bond} \mid \text{CIP}_{c,t}) = \alpha_0 + \alpha_1 \cdot \text{CIP}_{c,t}\]
+
+\textbf{Delta-CoVaR} is then:
+
+\[\Delta\text{-CoVaR}_c = Q_{0.05}(F_c^{Bond} \mid \text{CIP}_c = \text{stressed}) - Q_{0.05}(F_c^{Bond} \mid \text{CIP}_c = \text{median})\]
+
+A large negative $\Delta$-CoVaR means FX hedging stress \textit{significantly worsens} the tail risk of bond flows.
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item \texttt{covar\_fx\_hedging()} in \texttt{src/analysis/fx\_hedging\_contagion.py}. Uses \texttt{statsmodels.QuantReg} at $\tau = 0.05$.
+\item \texttt{delta\_covar\_all\_currencies()} computes for all 5+ currency pairs.
+\item Confidence intervals via bootstrap (1000 replications).
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item $\Delta$-CoVaR for each currency pair --- table showing which currencies have the largest systemic risk contribution from FX hedging.
+\item Bar chart: $\Delta$-CoVaR ranked by magnitude.
+\item Interpretation: e.g., ''When the EUR/USD CIP basis moves from its median (-5 bps) to its 5th percentile (-60 bps), the 5th percentile of European bond flows drops by an additional \$2.5B/month.''
+
+\end{enumerate}
+\textbf{$\rightarrow$ Link to Layer 3}: Layer 2 shows the \textit{magnitude} of systemic risk. Layer 3 traces the full \textit{transmission chain} from equities through FX and CIP to bond flows, testing whether the chain is active only during stress.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Layer 3: Quantile Connectedness (Ando et al. 2022)}
+
+\textbf{Purpose}: Estimate the full equity $\rightarrow$ FX $\rightarrow$ CIP $\rightarrow$ bond flows transmission chain as a system, testing whether it is dormant at the median but active during stress.
+
+\textbf{Unit of observation}: System of 4 variables $\times$ month \$t\$ (for each currency pair \$c\$).
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+US equity return & $r_t^{EQ}$ & S\&P 500 monthly log-return & Bloomberg & Monthly & US \\
+\hline
+FX return & $r_{c,t}^{FX}$ & Monthly change in spot exchange rate for currency pair \$c\$ & Bloomberg & Monthly & Currency pair \\
+\hline
+CIP basis & $\text{CIP}_{c,t}$ & Same as Layer 1 & Bloomberg & Monthly & Currency pair \\
+\hline
+Bond flows & $F_{c,t}^{Bond}$ & Same as Layer 2 & EPFR & Monthly & Country \\
+\hline
+\end{longtable}
+}
+
+\textbf{System vector}: $Y_t = (r_t^{EQ}, r_{c,t}^{FX}, \text{CIP}_{c,t}, F_{c,t}^{Bond})'$ --- a \textbf{4-variable Quantile VAR} representing the transmission chain for a single currency pair.
+
+\textbf{Model specification} --- Same QVAR framework as P2 Module 3:
+
+\[Q_{\tau}(y_{i,t} \mid Y_{t-1}, \ldots, Y_{t-p}) = c_i(\tau) + \sum_{j=1}^{4} \sum_{l=1}^{p} \beta_{ij}^{(l)}(\tau) \, y_{j,t-l}\]
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item \texttt{build\_connectedness\_system()} constructs the 4-variable system from the synthetic or real data.
+\item \texttt{fx\_hedging\_quantile\_connectedness()} estimates the QVAR and computes GFEVD at each quantile.
+\item \texttt{tail\_connectedness\_comparison()} compares total connectedness across $\tau \in \{0.05, 0.50, 0.95\}$.
+\item \texttt{cross\_currency\_connectedness()} repeats for all currency pairs.
+\item Lags: \$p = 4\$; horizon: \$h = 10\$.
+
+\end{itemize}
+\textbf{Key prediction}: The transmission chain equity $\rightarrow$ FX $\rightarrow$ CIP $\rightarrow$ bond flows is:
+\begin{itemize}
+\item \textbf{Dormant at $\tau = 0.50$}: low total connectedness, weak off-diagonal GFEVD entries.
+\item \textbf{Active at $\tau = 0.05$}: high total connectedness, strong sequential spillovers from equity to FX to CIP to bond flows.
+
+\end{itemize}
+\textbf{Output}:
+\begin{enumerate}
+\item Total connectedness at each quantile: \$C(0.05)\$, \$C(0.50)\$, \$C(0.95)\$ --- for each currency pair.
+\item GFEVD heatmaps at $\tau = 0.05$ vs. \$0.50\$: the $4 \times 4$ matrix showing pairwise spillovers.
+\item Directional analysis: equity is the dominant net transmitter in the left tail; bond flows are the dominant net receiver.
+\item Cross-currency summary table: which currency pairs show the strongest tail amplification.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{NBFI Penetration $\times$ FX Hedging (Panel Regression)}
+
+\textbf{Purpose}: Test whether countries with higher NBFI penetration suffer stronger contagion through the FX hedging channel.
+
+\textbf{Unit of observation}: Country \$c\$ $\times$ month \$t\$.
+
+\textbf{Input variables}:
+
+
+{\small
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\hline
+\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
+\hline
+\endhead
+Bond flows & $F_{c,t}^{Bond}$ & Net cross-border bond fund flows & EPFR & Monthly & Country \\
+\hline
+CIP basis & $\text{CIP}_{c,t}$ & Cross-currency basis swap spread & Bloomberg & Monthly & Currency pair \\
+\hline
+NBFI penetration & $\text{NBFI}_{c,t}$ & NBFI assets as \% of GDP & FSB & Annual (interpolated) & Country \\
+\hline
+Interaction & $\text{CIP}_{c,t} \times \text{NBFI}_{c,t}$ & Tests amplification & Constructed & Monthly & Country \\
+\hline
+Controls & $X_{c,t}$ & VIX, local equity return, yield slope differential & Various & Monthly & Mixed \\
+\hline
+\end{longtable}
+}
+
+\textbf{Model specification --- OLS panel}:
+
+\[F_{c,t}^{Bond} = \alpha_c + \beta_1 \cdot \text{CIP}_{c,t} + \beta_2 \cdot \text{NBFI}_{c,t} + \beta_3 \cdot (\text{CIP}_{c,t} \times \text{NBFI}_{c,t}) + \gamma' X_{c,t} + \varepsilon_{c,t}\]
+
+\textbf{Key parameter}: $\beta_3 < 0$. Countries with higher NBFI penetration experience \textit{larger} bond flow reversals when CIP basis widens (hedging costs spike).
+
+\textbf{IV specification}: CIP basis instrumented with central bank swap line announcements (exogenous supply-side shocks to FX funding).
+
+\textbf{Estimation details}:
+\begin{itemize}
+\item \texttt{nbfi\_fx\_hedging\_panel\_regression()} and \texttt{iv\_fx\_hedging\_regression()} in \texttt{src/analysis/fx\_hedging\_contagion.py}.
+\item Country FE, clustered standard errors.
+
+\end{itemize}
+\textbf{Output}: Coefficient table (OLS + IV); scatter plot split by high/low NBFI.
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Cascade Simulation: FX Hedging Feedback Loop}
+
+\textbf{Purpose}: Simulate the full feedback loop: equity shock $\rightarrow$ FX pass-through $\rightarrow$ CIP widening $\rightarrow$ bond flow reduction $\rightarrow$ equity feedback $\rightarrow$ VIX spike $\rightarrow$ repeat.
+
+\textbf{Unit of observation}: Simulated rounds (no agent-based --- this is a reduced-form cascade).
+
+\textbf{Input variables (calibration)}:
+
+
+{\small
+\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\hline
+\textbf{Parameter} & \textbf{Symbol} & \textbf{Value} & \textbf{Rationale} \\
+\hline
+\endhead
+Initial equity shock & --- & -5\% & Scenario \\
+\hline
+FX pass-through & $\phi$ & 0.30 & 30\% of equity shock passes to FX (Rey et al.) \\
+\hline
+CIP sensitivity & --- & 5 bps per 1\% FX move & Calibrated from BIS data \\
+\hline
+Bond flow sensitivity & --- & -2.0 (\$B per 10 bps CIP) & EPFR regression coefficients \\
+\hline
+Equity feedback & --- & 0.15 (15\% of bond flow shock feeds back to equity) & Portfolio rebalancing effect \\
+\hline
+Dampening & --- & $0.7^{(r-1)}$ per round & Geometric decay (markets adjust) \\
+\hline
+Max rounds & --- & 20 & Until convergence \\
+\hline
+\end{longtable}
+}
+
+\textbf{Simulation mechanism}:
+\begin{enumerate}
+\item \textbf{Round 1}: Equity falls -5\%.
+\item \textbf{FX}: USD appreciates by $0.30 \times 5\% = 1.5\%$.
+\item \textbf{CIP}: Basis widens by $5 \times 1.5 = 7.5$ bps.
+\item \textbf{Bond flows}: Reverse by $(-2.0) \times 7.5/10 = -$\$1.5B.
+\item \textbf{Feedback}: Equity drops additional $0.15 \times 1.5/100 = 0.225\%$.
+\item \textbf{VIX}: Spikes proportional to cumulative equity loss.
+\item \textbf{Dampening}: Each subsequent round is 70\% of the previous.
+\item \textbf{Repeat} until changes $< 0.01\%$.
+
+\end{enumerate}
+\textbf{Estimation details}: \texttt{simulate\_fx\_hedging\_cascade()} in \texttt{src/analysis/fx\_hedging\_contagion.py}.
+
+\textbf{Output}:
+\begin{enumerate}
+\item Round-by-round dynamics: equity return, FX move, CIP change, bond flow, VIX change, cumulative loss.
+\item Total cascade multiplier: cumulative loss / initial shock. If \$> 1\$: the FX hedging channel amplifies.
+\item Convergence chart: how quickly the feedback loop dampens.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\subsubsection{Module Linkage Map (Project 4)}
+
+
+\begin{verbatim}
++--------------------------------------+
+| Layer 1: Quantile Regression         |
+| CIP = f(Equity, Slope, VIX, EqxVIX) |
+| Does interaction break down in tails?|
++--------------+-----------------------+
+               | ''Yes --- offsetting forces fail in tails''
+               v
++--------------------------------------+
+| Layer 2: Delta-CoVaR                 |
+| Systemic risk: CIP stress → bond    |
+| flow left tail                       |
+| ''How bad is it?''                     |
++--------------+-----------------------+
+               | ''CIP stress significantly worsens bond flow tails''
+               v
++--------------------------------------+
+| Layer 3: Quantile Connectedness      |
+| Full chain: Equity → FX → CIP →     |
+| Bond flows (QVAR on 4-var system)    |
+| ''Chain dormant at median, active     |
+|  at tau = 0.05''                        |
++----------+-----------+---------------+
+           |           |
+           v           v
++----------------+  +---------------------+
+| NBFI Panel     |  | Cascade Simulation  |
+| CIP x NBFI    |  | Equity → FX → CIP → |
+| amplification  |  | Bonds → Feedback    |
+| (OLS + IV)     |  | Multi-round         |
++----------------+  +---------------------+
+\end{verbatim}
+
+
+\subsection{Expected Contributions}
+
+\begin{enumerate}
+\item First complete model of the equity-FX-hedging-bonds contagion chain, combining Rey et al. (2024) and Nenova et al. (2025).
+\item Discovery of the 'offsetting forces' mechanism: partial cancellation at the median, reinforcement in the tails.
+\item First application of quantile connectedness to the FX hedging transmission chain.
+\item Evidence that NBFI FX hedging maturity mismatch (3-month swaps hedging 10-year bonds) creates systemic rollover risk.
+
+\end{enumerate}
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\section{Common Methodological Toolkit}
+
+All four projects share a core econometric toolkit:
+
+
+{\small
+\begin{longtable}{|l|l|l|}
+\hline
+\textbf{Method} & \textbf{What It Captures} & \textbf{Used In} \\
+\hline
+\endhead
+Quantile Regression & Asymmetric effects across the distribution & P1, P2, P3, P4 \\
+\hline
+Quantile VAR (QVAR) & Tail-specific shock propagation & P2, P3, P4 \\
+\hline
+Quantile Connectedness & Tail spillovers between variables/countries & P1, P2, P3, P4 \\
+\hline
+Delta-CoVaR & Systemic risk contribution of specific channels & P1, P4 \\
+\hline
+Location-Scale GaR & Mean + variance effects on future growth & P2, P3 \\
+\hline
+DCC-GARCH & Time-varying correlations across sectors & P2 \\
+\hline
+Diebold-Yilmaz GFEVD & Directional connectedness (mean) & P2, P3 \\
+\hline
+Network / spectral & Centrality, HLI, contagion matrices & P1, P3 \\
+\hline
+Agent-based simulation & Cascade / fire-sale propagation & P1, P3, P4 \\
+\hline
+Panel FE + IV (2SLS) & Causal identification with MP shocks & P3, P4 \\
+\hline
+\end{longtable}
+}
+
+
+\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
+
+
+\section{Cross-Project Linkages}
+
+The four projects are complementary. Each addresses a distinct dimension of NBFI
+systemic risk, but findings feed into each other:
+
+\begin{itemize}
+\item \textbf{P1 $\rightarrow$ P2}: Implied leverage estimates serve as inputs to P2's VaR-constraint
+channel. Higher hidden leverage = tighter VaR constraints = amplified MP transmission.
+
+\item \textbf{P2 $\rightarrow$ P3}: P2 identifies which NBFI sub-sectors amplify domestic MP transmission;
+P3 traces how this amplification propagates across borders via dollar funding
+and portfolio flow channels.
+
+\item \textbf{P3 $\rightarrow$ P4}: P3's dollar funding channel (FX swap basis) is the same mechanism
+P4 models in detail. P4 adds the equity-FX link (Rey et al. 2024) and the yield
+curve offset (Nenova et al. 2025).
+
+\item \textbf{P4 $\rightarrow$ P1}: FX derivatives are a major source of hidden leverage (P1), and P4
+shows how hedging activity in these instruments creates contagion. Together they
+demonstrate that derivatives are simultaneously a source of hidden leverage AND
+a contagion channel.
+
+\end{itemize}
+
+\begin{quote}
+\itshape
+\textbf{Common finding across all four projects}: NBFI risks are fundamentally \\
+nonlinear. Standard mean-based methods miss the tail amplification, asymmetric \\
+contagion, and crisis-activated transmission that quantile methods reveal. \\
+\end{quote}
+
+
+\end{document}
