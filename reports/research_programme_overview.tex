@@ -18,6 +18,7 @@
 
 % Graphics and colors
 \usepackage{graphicx}
+\usepackage{adjustbox}
 \usepackage[dvipsnames]{xcolor}
 
 % Hyperlinks
@@ -34,6 +35,9 @@
   xleftmargin=1em,
   framexleftmargin=0.5em
 }
+
+% Allow line breaks at underscores and slashes in \texttt
+\renewcommand{\texttt}[1]{\begingroup\ttfamily\hyphenchar\font=`\-\spaceskip=.5em plus .3em minus .2em #1\endgroup}
 
 % Spacing
 \usepackage{setspace}
@@ -54,6 +58,8 @@
 \author{Sergio Sola}
 \date{February 2026}
 
+\tolerance=1000
+\emergencystretch=3em
 \begin{document}
 \maketitle
 \thispagestyle{empty}
@@ -99,7 +105,7 @@ and asymmetric contagion.
 
 
 {\small
-\begin{longtable}{|l|l|l|}
+\begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
 \hline
 \textbf{Project} & \textbf{Title} & \textbf{Focus} \\
 \hline
@@ -185,6 +191,8 @@ hidden leverage predict worse left-tail growth (Growth-at-Risk)?
 Project 1 has \textbf{four modules} that build on each other in sequence:
 
 
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
 \begin{verbatim}
 Module 1 (Implied Leverage)  --→  Module 2 (Bipartite Network)  --→  Module 3 (HLI Spectral Index)  --→  Module 4 (Tail Risk)
          ↓                                  ↓                                  ↓                                ↓
@@ -192,6 +200,8 @@ Module 1 (Implied Leverage)  --→  Module 2 (Bipartite Network)  --→  Module 
    per NBFI sector              adjacency matrix W_t            series (leading              GDP growth (GaR) and
    per quarter                  evolving quarterly              indicator)                    quantile connectedness
 \end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -207,7 +217,7 @@ Module 1 (Implied Leverage)  --→  Module 2 (Bipartite Network)  --→  Module 
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -238,9 +248,9 @@ Delta-equivalence factor & $\delta$ & Scaling factor converting gross notional t
 \item For sub-sectors where direct repo data is unavailable, repo borrowing is proxied by total short-term funding minus equity, using Flow of Funds (Z.1) liability breakdowns.
 
 \end{itemize}
-\textbf{Output}: A panel of implied leverage ratios: $\text{Lev}_{s,t}$ for each sub-sector $s$ and each quarter $t$ (2013Q1--2024Q4). This is a single number per sub-sector per quarter --- the ``true'' economic leverage.
+\textbf{Output}: A panel of implied leverage ratios: $\text{Lev}_{s,t}$ for each sub-sector \$s\$ and each quarter \$t\$ (2013Q1--2024Q4). This is a single number per sub-sector per quarter --- the ''true'' economic leverage.
 
-\textbf{$\rightarrow$ Link to Module 2}: The implied leverage ratios serve as \textit{edge weights} in the bipartite network. Higher leverage for sub-sector $s$ means the edges from banks to $s$ carry more systemic weight (because a given \$ exposure to a highly-leveraged NBFI poses more fire-sale risk).
+\textbf{$\rightarrow$ Link to Module 2}: The implied leverage ratios serve as \textit{edge weights} in the bipartite network. Higher leverage for sub-sector \$s\$ means the edges from banks to \$s\$ carry more systemic weight (because a given \$ exposure to a highly-leveraged NBFI poses more fire-sale risk).
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -256,7 +266,7 @@ Delta-equivalence factor & $\delta$ & Scaling factor converting gross notional t
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -318,7 +328,7 @@ This normalises by the total leverage-weighted exposure of bank \$i\$, so each r
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -378,7 +388,7 @@ Module 4 has \textbf{three sub-analyses}, all using the HLI from Module 3 as a k
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -443,7 +453,7 @@ This is a standard VAR except that \textit{every coefficient depends on the quan
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -490,7 +500,7 @@ Note: HLI is \textbf{lagged} (predictive, not contemporaneous) to address endoge
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -533,6 +543,8 @@ Estimated at multiple horizons $h \in \{1, 2, 4, 8, 12\}$ quarters and multiple 
 \subsubsection{Module Linkage Map (Project 1)}
 
 
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
 \begin{verbatim}
                     +----------------------------------+
   OFR / ECB repo    |  Module 1: Implied Leverage       |
@@ -561,6 +573,8 @@ Estimated at multiple horizons $h \in \{1, 2, 4, 8, 12\}$ quarters and multiple 
                |  Connect.  | | Amplif.  | |          |
                +------------+ +----------+ +----------+
 \end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \subsection{Expected Contributions}
@@ -577,7 +591,7 @@ Estimated at multiple horizons $h \in \{1, 2, 4, 8, 12\}$ quarters and multiple 
 
 
 {\small
-\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.33\textwidth}|p{0.22\textwidth}|}
 \hline
 \textbf{Data Source} & \textbf{Variables} & \textbf{Frequency} & \textbf{Coverage} \\
 \hline
@@ -667,6 +681,8 @@ explaining the resilience puzzle.
 Project 2 has \textbf{five modules}. Module 1 establishes the micro-foundation (VaR-constraint channel). Modules 2--3 provide the econometric core. Modules 4--5 address variance effects and the 2022--23 puzzle.
 
 
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
 \begin{verbatim}
 Module 1 (VaR Channel)  --→  Module 2 (DCC-GARCH)  --→  Module 3 (Quantile VAR)  --→  Module 4 (LS-GaR)  --→  Module 5 (Banerjee Puzzle)
        ↓                            ↓                           ↓                          ↓                        ↓
@@ -674,6 +690,8 @@ Module 1 (VaR Channel)  --→  Module 2 (DCC-GARCH)  --→  Module 3 (Quantile V
   procyclicality            NBFI correlations          transmission IRFs             fattens tails         OFI-to-real
   + fire-sale sim           (regime detection)         + connectedness               (variance channel)    economy split
 \end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -709,7 +727,7 @@ The reverse is more dangerous. When asset prices fall, VaR rises, breaching the 
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -789,7 +807,7 @@ where $\text{Stress}_t$ = dummy for quarters with VIX \$>\$ 75th percentile (or 
 
 
 {\small
-\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.33\textwidth}|p{0.22\textwidth}|}
 \hline
 \textbf{Parameter} & \textbf{Symbol} & \textbf{Definition} & \textbf{Value} \\
 \hline
@@ -856,7 +874,7 @@ NBFI system & --- & 20 entities: 5 HFs (leverage 5--25$\times$), 8 investment fu
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -931,7 +949,7 @@ where:
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -971,7 +989,7 @@ For each of the 7 equations, the dependent variable $y_{i,t}$ is regressed on \$
 \item \textbf{Lags}: \$p = 4\$ for quarterly data (one year of history). BIC-optimal at each quantile; robustness with $p \in \{1, 2, 4\}$.
 \item \textbf{Quantiles}: $\tau \in \{0.05, 0.25, 0.50, 0.75, 0.95\}$.
 \item \textbf{Residuals}: After estimation, compute residuals $\hat{u}_{i,t}(\tau) = y_{i,t} - \hat{Q}_\tau(y_{i,t}|\cdot)$ and their covariance matrix $\hat{\Sigma}(\tau)$.
-\item Implemented in \texttt{estimate\_quantile\_var()} and \texttt{estimate\_quantile\_var\_grid()} in \texttt{src/econometrics/quantile\_var.py}.
+\item Implemented in \texttt{estimate\_quantile\_var()} and \texttt{estimate\_\allowbreak{}quantile\_var\_grid()} in \texttt{src/\allowbreak{}econometrics/\allowbreak{}quantile\_var.py}.
 
 \end{itemize}
 \textbf{From the QVAR, three outputs are computed:}
@@ -1003,7 +1021,7 @@ For each of the 7 equations, the dependent variable $y_{i,t}$ is regressed on \$
 
 
 {\small
-\begin{longtable}{|l|l|l|}
+\begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
 \hline
 \textbf{Output} & \textbf{What it shows} & \textbf{Format} \\
 \hline
@@ -1037,7 +1055,7 @@ Rolling connectedness & $C_t(0.05)$ and $C_t(0.50)$ over time & Time series (2 l
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1116,7 +1134,7 @@ where $\Phi^{-1}(\tau)$ is the standard normal quantile function (or Student-t q
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1170,6 +1188,8 @@ From the VAR, compute the Generalised FEVD $\Theta$ at horizon \$h\$, then decom
 \subsubsection{Module Linkage Map (Project 2)}
 
 
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
 \begin{verbatim}
                     +----------------------------------+
                     |  Module 1: VaR-Constraint Channel |
@@ -1196,13 +1216,15 @@ From the VAR, compute the Generalised FEVD $\Theta$ at horizon \$h\$, then decom
 |  fatten tails (variance)?    |     |  Q: Why no crisis in 2022-23? |
 +------------------------------+     +--------------------------------+
 \end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \subsection{Data Sources \& Sample}
 
 
 {\small
-\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.33\textwidth}|p{0.22\textwidth}|}
 \hline
 \textbf{Data Source} & \textbf{Variables} & \textbf{Frequency} & \textbf{Coverage} \\
 \hline
@@ -1302,7 +1324,7 @@ generate cross-border deleveraging?
 
 
 {\small
-\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.33\textwidth}|p{0.22\textwidth}|}
 \hline
 \textbf{Data Source} & \textbf{Variables} & \textbf{Frequency} & \textbf{Coverage} \\
 \hline
@@ -1357,11 +1379,15 @@ FSB Global Monitoring & NBFI penetration ratio by country & Annual & 2002--prese
 Project 3 traces three contagion channels, then unifies them in a quantile connectedness framework and a cascade simulation.
 
 
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
 \begin{verbatim}
 Channel 1 (Dollar Funding)  -+
 Channel 2 (Portfolio Flows)  -+--→  Module 4 (Cross-Country QVAR)  --→  Module 5 (GFC Amplification Panel)  --→  Module 6 (Cascade Sim)
 Channel 3 (Global Fin Cycle) -+
 \end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -1377,7 +1403,7 @@ Channel 3 (Global Fin Cycle) -+
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1419,7 +1445,7 @@ Local equity return & $r_{c,t}^{EQ}$ & Country \$c\$ equity index return & Bloom
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1466,7 +1492,7 @@ Estimate VAR(4) and compute GFEVD at \$h = 10\$. Then repeat with bank flows. Co
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1509,7 +1535,7 @@ International equity returns & $r_{c,t}$ & Monthly equity index returns for \$N\
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1555,7 +1581,7 @@ USD funding proxy & $\text{USD}_t$ & Change in trade-weighted USD index or 3M CI
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1621,7 +1647,7 @@ where $\alpha_c$ = country fixed effects.
 
 
 {\small
-\begin{longtable}{|l|l|l|}
+\begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
 \hline
 \textbf{Parameter} & \textbf{Value} & \textbf{Source} \\
 \hline
@@ -1668,6 +1694,8 @@ Initial shock & -4\% across all assets & Scenario \\
 \subsubsection{Module Linkage Map (Project 3)}
 
 
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
 \begin{verbatim}
 +-----------------+  +-----------------+  +-----------------+
 | Module 1: Dollar |  | Module 2: Port. |  | Module 3: GFC   |
@@ -1699,6 +1727,8 @@ Initial shock & -4\% across all assets & Scenario \\
          | deleveraging (Eisenberg-Noe + Kyle)            |
          +------------------------------------------------+
 \end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \subsection{Expected Contributions}
@@ -1727,7 +1757,8 @@ cross-border bond investments. Combining Rey, Stavrakeva \& Tang (2024) on
 currency centrality with Nenova, Schrimpf \& Shin (2025) on FX derivatives and
 NBFI hedging, we identify a complete contagion channel:
 
-\textbf{Equity shocks $\rightarrow$ FX movements $\rightarrow$ hedging cost changes $\rightarrow$ NBFI portfolio adjustment $\rightarrow$ cross-border bond flow reversal $\rightarrow$ feedback to asset prices}
+**Equity shocks $\rightarrow$ FX movements $\rightarrow$ hedging cost changes $\rightarrow$ NBFI portfolio
+adjustment $\rightarrow$ cross-border bond flow reversal $\rightarrow$ feedback to asset prices**
 
 Critically, yield curve movements partially offset FX-induced hedging cost
 changes in normal times (self-stabilising), but during stress all forces
@@ -1739,7 +1770,7 @@ methods.
 
 
 {\small
-\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.33\textwidth}|p{0.22\textwidth}|}
 \hline
 \textbf{Data Source} & \textbf{Variables} & \textbf{Frequency} & \textbf{Coverage} \\
 \hline
@@ -1812,7 +1843,7 @@ through the FX hedging channel? (Panel regression with NBFI interaction + IV.)
 
 
 {\small
-\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.33\textwidth}|p{0.22\textwidth}|}
 \hline
 \textbf{Phase} & \textbf{Period} & \textbf{Projects} & \textbf{Deliverables} \\
 \hline
@@ -1880,6 +1911,8 @@ The research programme speaks directly to ongoing regulatory debates:
 Project 4 has \textbf{three analytical layers} plus a \textbf{cascade simulation} and an \textbf{NBFI amplification panel}. The three layers test the ''offsetting forces'' hypothesis at increasing levels of complexity.
 
 
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
 \begin{verbatim}
 Layer 1 (Quantile Regression)  --→  Layer 2 (Delta-CoVaR)  --→  Layer 3 (Quantile Connectedness)  --→  NBFI Panel  --→  Cascade Sim
          ↓                                  ↓                              ↓                              ↓                  ↓
@@ -1888,6 +1921,8 @@ Layer 1 (Quantile Regression)  --→  Layer 2 (Delta-CoVaR)  --→  Layer 3 (Qua
    down in tails                   on bond flows              median, active            suffer more           CIP → bonds
                                                               at tau=0.05                                      feedback loop
 \end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -1899,7 +1934,7 @@ Before detailing each layer, the key economic mechanism:
 
 
 {\small
-\begin{longtable}{|l|l|l|}
+\begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
 \hline
 \textbf{Force} & \textbf{Normal Times} & \textbf{Stress} \\
 \hline
@@ -1931,7 +1966,7 @@ In normal times, an equity shock that depresses foreign currencies (making hedgi
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1993,7 +2028,7 @@ Interaction & $\text{Equity}_t \times \text{VIX}_t$ & Tests whether equity impac
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -2051,7 +2086,7 @@ A large negative $\Delta$-CoVaR means FX hedging stress \textit{significantly wo
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -2110,7 +2145,7 @@ Bond flows & $F_{c,t}^{Bond}$ & Same as Layer 2 & EPFR & Monthly & Country \\
 
 
 {\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
+\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -2138,7 +2173,7 @@ Controls & $X_{c,t}$ & VIX, local equity return, yield slope differential & Vari
 
 \textbf{Estimation details}:
 \begin{itemize}
-\item \texttt{nbfi\_fx\_hedging\_panel\_regression()} and \texttt{iv\_fx\_hedging\_regression()} in \texttt{src/analysis/fx\_hedging\_contagion.py}.
+\item \texttt{nbfi\_fx\_hedging\_panel\_regression()} and \texttt{iv\_fx\_hedging\_\allowbreak{}regression()} in \texttt{src/analysis/\allowbreak{}fx\_hedging\_contagion.py}.
 \item Country FE, clustered standard errors.
 
 \end{itemize}
@@ -2158,7 +2193,7 @@ Controls & $X_{c,t}$ & VIX, local equity return, yield slope differential & Vari
 
 
 {\small
-\begin{longtable}{|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|p{0.21\textwidth}|}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.33\textwidth}|p{0.22\textwidth}|}
 \hline
 \textbf{Parameter} & \textbf{Symbol} & \textbf{Value} & \textbf{Rationale} \\
 \hline
@@ -2185,7 +2220,7 @@ Max rounds & --- & 20 & Until convergence \\
 \item \textbf{Round 1}: Equity falls -5\%.
 \item \textbf{FX}: USD appreciates by $0.30 \times 5\% = 1.5\%$.
 \item \textbf{CIP}: Basis widens by $5 \times 1.5 = 7.5$ bps.
-\item \textbf{Bond flows}: Reverse by $(-2.0) \times 7.5/10 = -$\$1.5B.
+\item \textbf{Bond flows}: Reverse by $(-2.0) \times 7.5/10 = -\$1.5$B.
 \item \textbf{Feedback}: Equity drops additional $0.15 \times 1.5/100 = 0.225\%$.
 \item \textbf{VIX}: Spikes proportional to cumulative equity loss.
 \item \textbf{Dampening}: Each subsequent round is 70\% of the previous.
@@ -2208,6 +2243,8 @@ Max rounds & --- & 20 & Until convergence \\
 \subsubsection{Module Linkage Map (Project 4)}
 
 
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
 \begin{verbatim}
 +--------------------------------------+
 | Layer 1: Quantile Regression         |
@@ -2240,6 +2277,8 @@ Max rounds & --- & 20 & Until convergence \\
 | (OLS + IV)     |  | Multi-round         |
 +----------------+  +---------------------+
 \end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \subsection{Expected Contributions}
@@ -2261,7 +2300,7 @@ All four projects share a core econometric toolkit:
 
 
 {\small
-\begin{longtable}{|l|l|l|}
+\begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
 \hline
 \textbf{Method} & \textbf{What It Captures} & \textbf{Used In} \\
 \hline
