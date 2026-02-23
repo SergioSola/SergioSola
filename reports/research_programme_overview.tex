@@ -681,17 +681,17 @@ explaining the resilience puzzle.
 Project 2 has \textbf{five modules}. Module 1 establishes the micro-foundation (VaR-constraint channel). Modules 2--3 provide the econometric core. Modules 4--5 address variance effects and the 2022--23 puzzle.
 
 
-\begin{adjustbox}{max width=\textwidth}
-\begin{minipage}{1.5\textwidth}
-\begin{verbatim}
-Module 1 (VaR Channel)  --→  Module 2 (DCC-GARCH)  --→  Module 3 (Quantile VAR)  --→  Module 4 (LS-GaR)  --→  Module 5 (Banerjee Puzzle)
-       ↓                            ↓                           ↓                          ↓                        ↓
-  Sub-sector beta_s            Time-varying bank-         Tail-specific MP              NBFI leverage         Within-OFI vs
-  procyclicality            NBFI correlations          transmission IRFs             fattens tails         OFI-to-real
-  + fire-sale sim           (regime detection)         + connectedness               (variance channel)    economy split
-\end{verbatim}
-\end{minipage}
-\end{adjustbox}
+{\small
+\noindent\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 1}\\VaR Channel\\[2pt]\scriptsize Sub-sector $\beta_s$\\procyclicality\\+ fire-sale sim}}%
+\hfill$\to$\hfill%
+\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 2}\\DCC-GARCH\\[2pt]\scriptsize Time-varying\\bank--NBFI\\correlations}}%
+\hfill$\to$\hfill%
+\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 3}\\Quantile VAR\\[2pt]\scriptsize Tail-specific MP\\transmission\\IRFs + connect.}}%
+\hfill$\to$\hfill%
+\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 4}\\LS-GaR\\[2pt]\scriptsize NBFI leverage\\fattens tails\\(variance ch.)}}%
+\hfill$\to$\hfill%
+\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 5}\\Banerjee\\Puzzle\\[2pt]\scriptsize Within-OFI vs\\OFI-to-real\\economy split}}
+}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -1028,7 +1028,7 @@ For each of the 7 equations, the dependent variable $y_{i,t}$ is regressed on \$
 \endhead
 QIRF comparison plot & MP shock $\rightarrow$ HF return at $\tau = 0.05$ vs \$0.50\$ & Line chart (horizon on x-axis) \\
 \hline
-Connectedness table & $C(\tau)$ at each quantile & Single row: \$C(0.05), C(0.25), C(0.50), C(0.75), C(0.95)\$ \\
+Connectedness table & $C(\tau)$ at each quantile & Single row: \$C(0.05)\$, \$C(0.25)\$, \$C(0.50)\$, \$C(0.75)\$, \$C(0.95)\$ \\
 \hline
 GFEVD heatmap & $\Theta(\tau)$ matrix at $\tau = 0.05$ vs \$0.50\$ & $7 \times 7$ heatmap (two panels) \\
 \hline
@@ -1379,15 +1379,21 @@ FSB Global Monitoring & NBFI penetration ratio by country & Annual & 2002--prese
 Project 3 traces three contagion channels, then unifies them in a quantile connectedness framework and a cascade simulation.
 
 
-\begin{adjustbox}{max width=\textwidth}
-\begin{minipage}{1.5\textwidth}
-\begin{verbatim}
-Channel 1 (Dollar Funding)  -+
-Channel 2 (Portfolio Flows)  -+--→  Module 4 (Cross-Country QVAR)  --→  Module 5 (GFC Amplification Panel)  --→  Module 6 (Cascade Sim)
-Channel 3 (Global Fin Cycle) -+
-\end{verbatim}
-\end{minipage}
-\end{adjustbox}
+\noindent\fbox{\small\strut Channel 1 (Dollar Funding)} \hfill
+\fbox{\small\strut Channel 2 (Portfolio Flows)} \hfill
+\fbox{\small\strut Channel 3 (Global Fin Cycle)}
+
+\smallskip
+\begin{center}
+$\searrow$ \hspace{3em} $\downarrow$ \hspace{3em} $\swarrow$
+
+\smallskip
+\fbox{\small\strut Module 4: Cross-Country QVAR}
+$\;\longrightarrow\;$
+\fbox{\small\strut Module 5: GFC Amplif.\ Panel}
+$\;\longrightarrow\;$
+\fbox{\small\strut Module 6: Cascade Sim}
+\end{center}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -1911,18 +1917,23 @@ The research programme speaks directly to ongoing regulatory debates:
 Project 4 has \textbf{three analytical layers} plus a \textbf{cascade simulation} and an \textbf{NBFI amplification panel}. The three layers test the ''offsetting forces'' hypothesis at increasing levels of complexity.
 
 
-\begin{adjustbox}{max width=\textwidth}
-\begin{minipage}{1.5\textwidth}
-\begin{verbatim}
-Layer 1 (Quantile Regression)  --→  Layer 2 (Delta-CoVaR)  --→  Layer 3 (Quantile Connectedness)  --→  NBFI Panel  --→  Cascade Sim
-         ↓                                  ↓                              ↓                              ↓                  ↓
-   Offsetting forces:              Systemic risk of           Full transmission         Countries with        Multi-round
-   interaction breaks              FX hedging stress          chain dormant at          higher NBFI           equity → FX →
-   down in tails                   on bond flows              median, active            suffer more           CIP → bonds
-                                                              at tau=0.05                                      feedback loop
-\end{verbatim}
-\end{minipage}
-\end{adjustbox}
+{\small
+\noindent\fbox{\parbox{0.27\textwidth}{\centering\textbf{Layer 1}\\Quantile Regression\\[2pt]\scriptsize Offsetting forces:\\interaction breaks\\down in tails}}%
+\hfill$\longrightarrow$\hfill%
+\fbox{\parbox{0.27\textwidth}{\centering\textbf{Layer 2}\\Delta-CoVaR\\[2pt]\scriptsize Systemic risk of\\FX hedging stress\\on bond flows}}%
+\hfill$\longrightarrow$\hfill%
+\fbox{\parbox{0.27\textwidth}{\centering\textbf{Layer 3}\\Quantile Connectedness\\[2pt]\scriptsize Full chain dormant\\at median, active\\at $\tau{=}0.05$}}
+
+\medskip
+\begin{center}
+$\swarrow$ \hspace{8em} $\searrow$
+
+\smallskip
+\fbox{\parbox{0.38\textwidth}{\centering\textbf{NBFI Panel}\\[-1pt]\scriptsize Countries with higher NBFI suffer more}}%
+\hspace{1em}%
+\fbox{\parbox{0.38\textwidth}{\centering\textbf{Cascade Simulation}\\[-1pt]\scriptsize Multi-round equity $\to$ FX $\to$ CIP $\to$ bonds feedback loop}}
+\end{center}
+}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -1934,7 +1945,7 @@ Before detailing each layer, the key economic mechanism:
 
 
 {\small
-\begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
+\begin{longtable}{@{}|p{0.18\textwidth}|p{0.36\textwidth}|p{0.36\textwidth}|@{}}
 \hline
 \textbf{Force} & \textbf{Normal Times} & \textbf{Stress} \\
 \hline
