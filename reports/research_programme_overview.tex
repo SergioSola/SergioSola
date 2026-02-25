@@ -245,7 +245,7 @@ Delta-equivalence factor & $\delta$ & Scaling factor converting gross notional t
 \end{itemize}
 \textbf{Output}: A panel of implied leverage ratios: $\text{Lev}_{s,t}$ for each sub-sector \$s\$ and each quarter \$t\$ (2013Q1--2024Q4). This is a single number per sub-sector per quarter --- the ''true'' economic leverage.
 
-\textbf{$\rightarrow$ Link to Module 2}: The implied leverage ratios serve as \textit{edge weights} in the bipartite network. Higher leverage for sub-sector \$s\$ means the edges from banks to \$s\$ carry more systemic weight (because a given \$ exposure to a highly-leveraged NBFI poses more fire-sale risk).
+\textbf{$\rightarrow$ Link to Module 2}: The implied leverage ratios serve as \textit{edge weights} in the bipartite network. Higher leverage for sub-sector $s$ means the edges from banks to $s$ carry more systemic weight (because a given \$ exposure to a highly-leveraged NBFI poses more fire-sale risk).
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -269,7 +269,7 @@ However, bilateral bank-by-NBFI-by-country data is generally unavailable. The re
 \item \textbf{Cross-border exposures}: Available only as (sub-sector \$j\$, country \$n\$) $\rightarrow$ rest-of-world aggregates (from BIS Locational Banking Statistics, which report bank claims on/liabilities to non-bank financial institutions by country, but not by NBFI sub-type across borders).
 
 \end{itemize}
-In practice, $W_t$ is constructed as a \textbf{two-tier structure}:
+In practice, $\mathcal{W}_t$ is constructed as a \textbf{two-tier structure}:
 \begin{enumerate}
 \item \textbf{Within-jurisdiction}: Full \$(i,j)\$ bilateral matrix where OFR/ECB data permits.
 \item \textbf{Cross-border}: $(j,n) \to \text{RoW}$ aggregate exposures, allocated proportionally using BIS country-level banking statistics as weights.
@@ -304,20 +304,20 @@ Institution metadata & --- & Bank names, NBFI sub-sector classification, country
 The network is a \textbf{directed weighted bipartite graph} $G_t = (V_B \cup V_N, E_t)$ where $V_B$ = G-SIB banks, $V_N$ = NBFI sub-sectors, and $E_t$ = directed edges representing credit and funding relationships.
 
 
-\paragraph{Construction of the Adjacency Matrix $W_t$}
+\paragraph{Construction of the Adjacency Matrix $\mathcal{W}_t$}
 
 The \textbf{exposure-weighted adjacency matrix} is:
 
 \[W_{ij,t}^{\text{credit}} = \frac{\text{Exp}_{ij,t} \times \text{Lev}_{j,t}}{\sum_k \text{Exp}_{ik,t} \times \text{Lev}_{k,t}}\]
 
-\textbf{Why multiply by leverage?} The logic is a \textbf{fire-sale argument}. Consider bank $i$ that has lent \$100M to NBFI sub-sector $j$ via repo. If $j$ is leveraged $2\times$, a 10\% asset price decline wipes out 20\% of its equity --- painful but survivable. If \$j\$ is leveraged 10$\times$, the same 10\% decline wipes out 100\% of equity --- triggering forced liquidation, fire sales, and potential default. The loss that cascades back to bank \$i\$ is therefore proportional not just to the raw exposure $\text{Exp}_{ij,t}$ but to the \textit{leverage-adjusted exposure} $\text{Exp}_{ij,t} \times \text{Lev}_{j,t}$. Leverage acts as an amplifier: the same dollar of exposure to a highly-leveraged counterparty poses far more systemic risk than to a low-leverage one.
+\textbf{Why multiply by leverage?} The logic is a \textbf{fire-sale argument}. Consider bank \$i$ that has lent \$100M to NBFI sub-sector \$j\$ via repo. If \$j\$ is leveraged 2$\times$, a 10\% asset price decline wipes out 20\% of its equity --- painful but survivable. If \$j\$ is leveraged 10$\times$, the same 10\% decline wipes out 100\% of equity --- triggering forced liquidation, fire sales, and potential default. The loss that cascades back to bank \$i\$ is therefore proportional not just to the raw exposure $\text{Exp}_{ij,t}$ but to the \textit{leverage-adjusted exposure} $\text{Exp}_{ij,t} \times \text{Lev}_{j,t}$. Leverage acts as an amplifier: the same dollar of exposure to a highly-leveraged counterparty poses far more systemic risk than to a low-leverage one.
 
 The row-normalisation (dividing by $\sum_k$) ensures each row sums to 1, giving the \textit{share} of bank $i$'s leverage-weighted risk that comes from each NBFI sub-sector.
 
 
 \paragraph{Two Directions of Risk: Credit vs. Funding}
 
-The matrix $W_t^{\text{credit}}$ (dimension $n_B \times n_N$) captures only one direction --- \textbf{credit/fire-sale risk} (bank's loss from NBFI distress). There is a second, equally important direction --- \textbf{funding risk} (NBFI's loss from bank funding withdrawal). The funding matrix $W_t^{\text{funding}}$ has dimension $n_N \times n_B$, with \$(j,i)\$-th entry:
+The matrix $\mathcal{W}_t^{\text{credit}}$ (dimension $n_B \times n_N$) captures only one direction --- \textbf{credit/fire-sale risk} (bank's loss from NBFI distress). There is a second, equally important direction --- \textbf{funding risk} (NBFI's loss from bank funding withdrawal). The funding matrix $\mathcal{W}_t^{\text{funding}}$ has dimension $n_N \times n_B$, with $(j,i)$-th entry:
 
 \[W_{ji,t}^{\text{funding}} = \frac{\text{Exp}_{ji,t} \times \text{Lev}_{i,t}}{\sum_k \text{Exp}_{jk,t} \times \text{Lev}_{k,t}}\]
 
@@ -334,8 +334,8 @@ We combine both into a single $(n_B + n_N) \times (n_B + n_N)$ block matrix:
 
 where:
 \begin{itemize}
-\item The upper-right block $W_t^{\text{credit}}$ ($n_B \times n_N$): bank \$i\$'s credit risk exposure to NBFI \$j\$
-\item The lower-left block $W_t^{\text{funding}}$ ($n_N \times n_B$): NBFI \$j\$'s funding risk from bank \$i\$
+\item The upper-right block $\mathcal{W}_t^{\text{credit}}$ ($n_B \times n_N$): bank \$i\$'s credit risk exposure to NBFI \$j\$
+\item The lower-left block $\mathcal{W}_t^{\text{funding}}$ ($n_N \times n_B$): NBFI \$j\$'s funding risk from bank \$i\$
 \item The diagonal blocks are zero (within-bank and within-NBFI linkages are not modelled here)
 
 \end{itemize}
@@ -364,7 +364,7 @@ Each cell creates a different contagion channel with different speed, amplificat
 
 \textbf{Data source}: ''From-whom-to-whom'' financial accounts --- Fed Z.1 (US), ECB Financial Accounts (euro area), OECD institutional sector accounts (broader coverage).
 
-\textbf{Implication for the adjacency matrix}: Where from-whom-to-whom data is available, $W_t$ can be disaggregated by counterparty type, enabling separate spectral analyses for credit-intermediation vs. market-intermediation risk channels.
+\textbf{Implication for the adjacency matrix}: Where from-whom-to-whom data is available, $\mathcal{W}_t$ can be disaggregated by counterparty type, enabling separate spectral analyses for credit-intermediation vs. market-intermediation risk channels.
 
 
 \paragraph{Estimation details}
@@ -380,14 +380,14 @@ Each cell creates a different contagion channel with different speed, amplificat
 \paragraph{Output}
 
 \begin{itemize}
-\item A time series of adjacency matrices $W_t^{\text{credit}}$ ($n_B \times n_N$) and $W_t^{\text{funding}}$ ($n_N \times n_B$), one pair per quarter.
+\item A time series of adjacency matrices $\mathcal{W}_t^{\text{credit}}$ ($n_B \times n_N$) and $\mathcal{W}_t^{\text{funding}}$ ($n_N \times n_B$), one pair per quarter.
 \item Combined system matrix $\mathcal{W}_t$ ($(n_B + n_N) \times (n_B + n_N)$ block matrix) for spectral analysis.
 \item Centrality rankings for each node at each date.
 \item Network summary statistics over time: density, total exposure, HHI (concentration), reciprocity.
 \item Decomposition of cross-border vs. domestic exposure shares over time.
 
 \end{itemize}
-\textbf{$\rightarrow$ Link to Module 3}: The combined system matrix $\mathcal{W}_t$ is the direct input to the spectral analysis. The HLI is the largest eigenvalue of $W_t$.
+\textbf{$\rightarrow$ Link to Module 3}: The combined adjacency matrix $\mathcal{W}_t$ is the direct input to the spectral analysis. The HLI is the largest eigenvalue of $\mathcal{W}_t$.
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -421,7 +421,7 @@ where $\lambda_1(\mathcal{W}_t)$ is the \textbf{largest eigenvalue} (spectral ra
 
 \textbf{Economic intuition --- network amplification, not PCA} (Acemoglu, Ozdaglar \& Tahbaz-Salehi 2015): The spectral radius is \textit{not} a statistical summary like PCA's first component --- it is a \textbf{structural measure of the network's amplification capacity}. The logic is a cascade argument:
 
-Consider a shock $\varepsilon$ hitting one node. Through the network, losses propagate: node $j$'s distress hits bank $i$ with weight $\mathcal{W}_{ij}$, then \$i\$'s distress hits others with weight $\mathcal{W}_{ki}$, and so on. After \$n\$ rounds, total losses are:
+Consider a shock $\varepsilon$ hitting one node. Through the network, losses propagate: node $j$'s distress hits bank $i$ with weight $\mathcal{W}_{ij}$, then $i$'s distress hits others with weight $\mathcal{W}_{ki}$, and so on. After $n$ rounds, total losses are:
 
 \[\text{Total loss} \propto \varepsilon + \mathcal{W}\varepsilon + \mathcal{W}^2\varepsilon + \mathcal{W}^3\varepsilon + \ldots = (I - \mathcal{W})^{-1}\varepsilon\]
 
@@ -1973,18 +1973,18 @@ Layer 1 (Quantile Regression)  --→  Layer 2 (Delta-CoVaR)  --→  Layer 3 (Qua
 
 \subsubsection{The Offsetting Forces Hypothesis}
 
-Before detailing each layer, the key economic mechanism:
+Before detailing each layer, the key economic mechanism. The relevant shock is a \textbf{global risk-off episode} --- a broad-based flight from risky assets worldwide, typically proxied by a large S\&P 500 decline. The distinction matters: a US-specific correction (e.g., tech sector sell-off) could trigger portfolio rebalancing \textit{away} from USD. But a global risk-off event activates the dollar's safe-haven role, which is the setting for the contagion channel below.
 
 
 {\small
 \begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
 \hline
-\textbf{Force} & \textbf{Normal Times} & \textbf{Stress} \\
+\textbf{Force} & \textbf{Normal Times (moderate risk-off)} & \textbf{Stress (severe global risk-off)} \\
 \hline
 \endhead
-Equity $\rightarrow$ FX (Rey et al. 2024) & USD appreciates moderately & USD appreciates violently (safe haven) \\
+Global risk-off $\rightarrow$ FX (Rey et al. 2024) & USD appreciates moderately (safe-haven demand outweighs portfolio rebalancing) & USD appreciates violently (dollar funding squeeze + flight to safety) \\
 \hline
-Yield curve (Nenova et al. 2025) & Steepens $\rightarrow$ attractive hedged carry & Flattens/inverts $\rightarrow$ carry disappears \\
+Yield curve & Bull steepens (front end drops on easing expectations; long end holds) $\rightarrow$ attractive hedged carry & Bull flattens/inverts (flight to quality crushes long end) $\rightarrow$ carry disappears \\
 \hline
 CIP deviations & Small $\rightarrow$ manageable hedging cost & Blow out $\rightarrow$ prohibitive cost \\
 \hline
@@ -1998,18 +1998,18 @@ CIP deviations & Small $\rightarrow$ manageable hedging cost & Blow out $\righta
 
 Consider a European pension fund holding US Treasury bonds, hedged using 3-month FX forwards (rolled quarterly). The cost of hedging is reflected in the CIP basis.
 
-\textbf{The shock}: US equity markets fall sharply (negative equity return).
+\textbf{The shock}: A global risk-off event triggers broad equity declines. US equity markets fall sharply alongside global equities.
 
-\textbf{Channel 1 --- Exchange rate (Rey et al. 2024)}: When US equities fall, global risk aversion spikes. The USD appreciates (safe-haven currency). EUR/USD falls. For the pension fund:
+\textbf{Channel 1 --- Exchange rate (Rey et al. 2024)}: In a global risk-off, two forces compete. Portfolio rebalancing pushes investors to sell US equities and repatriate capital $\rightarrow$ USD selling pressure. But the safe-haven channel pushes in the opposite direction: global investors flee risky assets \textit{everywhere} (EM equities, corporate bonds, commodities) and rush into USD-denominated safe assets; simultaneously, global banks scramble to roll USD funding, creating a dollar shortage (Avdjiev et al. 2019). Empirically, the safe-haven / funding channel dominates --- the USD appreciates. EUR/USD falls. For the pension fund:
 \begin{itemize}
 \item Its FX hedge (short USD forward) suffers a mark-to-market loss
 \item Hedging \textit{future} USD exposure becomes more expensive because the CIP basis widens as dollar demand surges
 
 \end{itemize}
-\textbf{Channel 2 --- Yield curve (Nenova et al. 2025)}: The equity shock affects monetary policy expectations:
+\textbf{Channel 2 --- Yield curve (Nenova et al. 2025)}: The equity shock affects monetary policy expectations, but the yield curve response differs by severity:
 \begin{itemize}
-\item \textit{Normal times} (moderate correction): Expectations of monetary easing $\rightarrow$ yield curve \textbf{steepens} $\rightarrow$ hedged carry (US bond yield minus hedging cost) remains \textbf{attractive} $\rightarrow$ pension fund keeps hedging and buying US bonds
-\item \textit{Stress} (severe crash): Flight to safety into long-term Treasuries $\rightarrow$ yield curve \textbf{flattens/inverts} $\rightarrow$ hedged carry \textbf{collapses} $\rightarrow$ the business case for holding hedged US bonds evaporates
+\item \textit{Normal times} (moderate correction): Markets price in modest rate cuts $\rightarrow$ the \textbf{short end} (2Y) drops quickly (directly tied to policy expectations), while the \textbf{long end} (10Y) is anchored by term premia and long-run growth expectations $\rightarrow$ 10Y-2Y spread \textbf{widens} (bull steepening) $\rightarrow$ hedged carry (long-end yield minus short-term hedging cost) remains \textbf{attractive} $\rightarrow$ pension fund keeps hedging and buying US bonds
+\item \textit{Stress} (severe crash): Flight to quality drives aggressive buying of long-term Treasuries $\rightarrow$ the \textbf{long end} drops sharply $\rightarrow$ 10Y-2Y spread \textbf{narrows or inverts} (bull flattening) $\rightarrow$ hedged carry \textbf{collapses} $\rightarrow$ the business case for holding hedged US bonds evaporates
 
 \end{itemize}
 \textbf{Channel 3 --- CIP deviations}: The CIP basis (FX hedging cost above covered interest parity) is normally small (5--15 bps). In stress:
@@ -2021,18 +2021,18 @@ Consider a European pension fund holding US Treasury bonds, hedged using 3-month
 \end{itemize}
 \textbf{The key asymmetry}:
 
-\textit{Normal times} (say, a 5\% equity correction):
+\textit{Normal times} (say, a 5\% global equity correction):
 \begin{itemize}
-\item USD appreciates modestly $\rightarrow$ hedging cost up slightly (\textbf{negative})
-\item Yield curve steepens $\rightarrow$ hedged carry improves (\textbf{positive, offsetting})
+\item USD appreciates modestly (safe-haven demand slightly exceeds portfolio rebalancing) $\rightarrow$ hedging cost up slightly (\textbf{negative})
+\item Yield curve bull-steepens (short end drops, long end holds) $\rightarrow$ hedged carry improves (\textbf{positive, offsetting})
 \item CIP basis barely moves $\rightarrow$ manageable
 \item \textbf{Net}: forces partially cancel. Self-stabilising.
 
 \end{itemize}
-\textit{Stress} (say, a 20\% crash --- March 2020 or a severe risk-off event):
+\textit{Stress} (say, a 20\% crash --- March 2020 or a severe global risk-off event):
 \begin{itemize}
-\item USD appreciates violently $\rightarrow$ huge mark-to-market losses, hedging cost surges (\textbf{negative})
-\item Yield curve flattens/inverts $\rightarrow$ hedged carry disappears (\textbf{negative, reinforcing} not offsetting)
+\item USD appreciates violently (dollar funding squeeze overwhelms all other forces) $\rightarrow$ huge mark-to-market losses, hedging cost surges (\textbf{negative})
+\item Yield curve bull-flattens/inverts (flight to quality crushes long-end yields) $\rightarrow$ hedged carry disappears (\textbf{negative, reinforcing} not offsetting)
 \item CIP basis blows out $\rightarrow$ hedging prohibitive (\textbf{negative, reinforcing})
 \item \textbf{Net}: ALL three forces push in the same direction. Pension fund stops rolling hedges, sells US bonds. Every hedged foreign investor faces the same forces simultaneously $\rightarrow$ \textbf{coordinated sell-off} in US bonds $\rightarrow$ feeds back to equity declines, further USD appreciation, further CIP blowout. This is the positive feedback loop that only activates in the tails.
 
@@ -2309,7 +2309,7 @@ Max rounds & --- & 20 & Until convergence \\
 \item \textbf{Round 1}: Equity falls -5\%.
 \item \textbf{FX}: USD appreciates by $0.30 \times 5\% = 1.5\%$.
 \item \textbf{CIP}: Basis widens by $5 \times 1.5 = 7.5$ bps.
-\item \textbf{Bond flows}: Reverse by $(-2.0) \times 7.5/10 = -$\$1.5B.
+\item \textbf{Bond flows}: Reverse by $(-2.0) \times 7.5/10 = -\$1.5B.
 \item \textbf{Feedback}: Equity drops additional $0.15 \times 1.5/100 = 0.225\%$.
 \item \textbf{VIX}: Spikes proportional to cumulative equity loss.
 \item \textbf{Dampening}: Each subsequent round is 70\% of the previous.
