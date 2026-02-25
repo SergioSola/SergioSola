@@ -1167,6 +1167,20 @@ Rolling connectedness & $C_t(0.05)$ and $C_t(0.50)$ over time & Time series (2 l
 \end{longtable}
 }
 
+
+\paragraph{Extracting the Global Tail Cycle (GTC)}
+
+The rolling quantile connectedness $C_t(0.05)$ captures how tightly the system is coupled \textit{in the tails} at each point in time. But Project 3 also needs a \textbf{common tail factor} --- a single series that captures when global markets are jointly in their left tails. This is the Global Tail Cycle (GTC), and it is a direct by-product of the QVAR estimation.
+
+\textbf{Construction} (two approaches, both from the QVAR output):
+
+\begin{enumerate}
+\item \textbf{Quantile factor model (Ando \& Bai 2020)}: Estimate a quantile factor model at $\tau = 0.05$ on the \$k\$-variable system. The first common factor $\hat{f}_t(0.05)$ is the GTC --- the latent variable that best explains co-movement in the 5th percentile across all sectors. This is conceptually analogous to the Global Financial Cycle (Rey 2013), which is the first principal component at the mean, but extracted at the left tail.
+\item \textbf{QVAR residual approach}: From the estimated QVAR at $\tau = 0.05$, compute the generalised forecast error variance decomposition. The first principal component of the off-diagonal spillover matrix $\Theta_t(0.05)$ gives a ''tail spillover factor'' that tracks when cross-sector tail transmission is elevated.
+
+\end{enumerate}
+\textbf{Output}: A quarterly time series $\text{GTC}_t$ exported for use in Project 3 (Module 3: NBFI amplification regressions) and Project 4 (as an alternative to the GFC for shock identification). The GTC differs from the GFC in that it captures co-movement specifically in crash episodes --- markets can appear diversified on average ($C_t(0.50)$ low) while being tightly coupled in the tails ($C_t(0.05)$ high).
+
 \textbf{$\rightarrow$ Link to Module 4}: Module 3 shows that transmission is stronger in the tails. Module 4 tests whether NBFI leverage explains \textit{why} --- via the variance (scale) channel, not just the mean (location) channel.
 
 
@@ -1657,7 +1671,7 @@ where:
 \item $\text{NBFI}_{c,t-1}^{(k)}$ = lagged NBFI counterparty shares, $k \in \{$for-borrow, bank-borrow, priv-lend, fx-hedge$\}$
 \item $\text{Shock}_t$ = global shock measure. Two alternatives:
 \item GFC (Global Financial Cycle): first principal component of risky asset prices (Rey 2015)
-\item GTC (Global Tail Cycle): common factor in left-tail co-movements (from Project 2)
+\item GTC (Global Tail Cycle): common factor in left-tail co-movements (extracted from the QVAR quantile factor model in Project 2, Module 3)
 \item $\delta_t$ = time fixed effects, which \textbf{absorb the direct effect of GFC/GTC} --- identification comes purely from \textit{cross-country variation} in NBFI structure
 \item $X_{c,t}$ = controls: GDP growth, policy rate, exchange rate regime, capital account openness
 
@@ -1678,7 +1692,7 @@ where:
 \item Use GTC instead of GFC as the shock measure --- if GTC interactions are stronger, it confirms that tail co-movements (not just average cycles) drive amplification
 
 \end{itemize}
-\textbf{Data}: BIS LBS (NBFI counterparty decomposition), IMF IFS (financial conditions), Jarocinski-Karadi MP shocks, GFC from Project 2, GTC from Project 2.
+\textbf{Data}: BIS LBS (NBFI counterparty decomposition), IMF IFS (financial conditions), Jarocinski-Karadi MP shocks, GFC from Project 2 (Module 2 DCC-GARCH or PCA of risky asset returns), GTC from Project 2 (Module 3 QVAR quantile factor extraction).
 
 \textbf{Output}: Coefficient table for $\gamma_k$ across channels; bar chart comparing amplification magnitudes by NBFI integration type; GFC vs. GTC comparison.
 
@@ -2414,7 +2428,7 @@ Agent-based simulation & Cascade / fire-sale propagation & P1, P3, P4 \\
 \hline
 Panel FE + IV (2SLS) & Causal identification with MP shocks & P3, P4 \\
 \hline
-Quantile factor model & Global Tail Cycle extraction (Ando \& Bai 2020) & P3 \\
+Quantile factor model & Global Tail Cycle extraction (Ando \& Bai 2020) & P2 (used in P3, P4) \\
 \hline
 From-whom-to-whom accounts & NBFI counterparty decomposition & P1, P3, P4 \\
 \hline
@@ -2463,7 +2477,7 @@ This decomposition matters for every panel regression in the programme. Data: fr
 
 \paragraph{3. Global Tail Cycle}
 
-The standard Global Financial Cycle (Rey 2013) captures co-movement at the mean. A \textbf{Global Tail Cycle} captures co-movement in the left tail --- the common factor in crash risk. These are conceptually distinct objects: markets can look diversified on average but crash together. The GTC is the risk factor that sets in motion coordinated VaR breaches and feedback loops across jurisdictions. Extracted either from tail dependence matrices (rolling exceedance correlations) or quantile factor models (Ando \& Bai 2020).
+The standard Global Financial Cycle (Rey 2013) captures co-movement at the mean. A \textbf{Global Tail Cycle} captures co-movement in the left tail --- the common factor in crash risk. These are conceptually distinct objects: markets can look diversified on average but crash together. The GTC is the risk factor that sets in motion coordinated VaR breaches and feedback loops across jurisdictions. \textbf{Constructed in Project 2, Module 3} (QVAR) via the Ando \& Bai (2020) quantile factor model at $\tau = 0.05$, or alternatively as the first principal component of the QVAR tail spillover matrix. Used as an input in Project 3 (Module 3) and Project 4 (Module 5).
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
