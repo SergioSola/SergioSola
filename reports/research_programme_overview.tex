@@ -310,7 +310,7 @@ The \textbf{exposure-weighted adjacency matrix} is:
 
 \[W_{ij,t}^{\text{credit}} = \frac{\text{Exp}_{ij,t} \times \text{Lev}_{j,t}}{\sum_k \text{Exp}_{ik,t} \times \text{Lev}_{k,t}}\]
 
-\textbf{Why multiply by leverage?} The logic is a \textbf{fire-sale argument}. Consider bank $i$ that has lent \$100M to NBFI sub-sector $j$ via repo. If $j$ is leveraged $2\times$, a 10\% asset price decline wipes out 20\% of its equity --- painful but survivable. If $j$ is leveraged $10\times$, the same 10\% decline wipes out 100\% of equity --- triggering forced liquidation, fire sales, and potential default. The loss that cascades back to bank $i$ is therefore proportional not just to the raw exposure $\text{Exp}_{ij,t}$ but to the \textit{leverage-adjusted exposure} $\text{Exp}_{ij,t} \times \text{Lev}_{j,t}$. Leverage acts as an amplifier: the same dollar of exposure to a highly-leveraged counterparty poses far more systemic risk than to a low-leverage one.
+\textbf{Why multiply by leverage?} The logic is a \textbf{fire-sale argument}. Consider bank $i$ that has lent \$100M to NBFI sub-sector $j$ via repo. If $j$ is leveraged $2\times$, a 10\% asset price decline wipes out 20\% of its equity --- painful but survivable. If \$j\$ is leveraged 10$\times$, the same 10\% decline wipes out 100\% of equity --- triggering forced liquidation, fire sales, and potential default. The loss that cascades back to bank \$i\$ is therefore proportional not just to the raw exposure $\text{Exp}_{ij,t}$ but to the \textit{leverage-adjusted exposure} $\text{Exp}_{ij,t} \times \text{Lev}_{j,t}$. Leverage acts as an amplifier: the same dollar of exposure to a highly-leveraged counterparty poses far more systemic risk than to a low-leverage one.
 
 The row-normalisation (dividing by $\sum_k$) ensures each row sums to 1, giving the \textit{share} of bank $i$'s leverage-weighted risk that comes from each NBFI sub-sector.
 
@@ -387,7 +387,7 @@ Each cell creates a different contagion channel with different speed, amplificat
 \item Decomposition of cross-border vs. domestic exposure shares over time.
 
 \end{itemize}
-\textbf{$\rightarrow$ Link to Module 3}: The combined system matrix $\mathcal{W}_t$ is the direct input to the spectral analysis. The HLI is the largest eigenvalue of $\mathcal{W}_t$.
+\textbf{$\rightarrow$ Link to Module 3}: The combined system matrix $\mathcal{W}_t$ is the direct input to the spectral analysis. The HLI is the largest eigenvalue of $W_t$.
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -421,7 +421,7 @@ where $\lambda_1(\mathcal{W}_t)$ is the \textbf{largest eigenvalue} (spectral ra
 
 \textbf{Economic intuition --- network amplification, not PCA} (Acemoglu, Ozdaglar \& Tahbaz-Salehi 2015): The spectral radius is \textit{not} a statistical summary like PCA's first component --- it is a \textbf{structural measure of the network's amplification capacity}. The logic is a cascade argument:
 
-Consider a shock $\varepsilon$ hitting one node. Through the network, losses propagate: node $j$'s distress hits bank $i$ with weight $\mathcal{W}_{ij}$, then $i$'s distress hits others with weight $\mathcal{W}_{ki}$, and so on. After $n$ rounds, total losses are:
+Consider a shock $\varepsilon$ hitting one node. Through the network, losses propagate: node $j$'s distress hits bank $i$ with weight $\mathcal{W}_{ij}$, then \$i\$'s distress hits others with weight $\mathcal{W}_{ki}$, and so on. After \$n\$ rounds, total losses are:
 
 \[\text{Total loss} \propto \varepsilon + \mathcal{W}\varepsilon + \mathcal{W}^2\varepsilon + \mathcal{W}^3\varepsilon + \ldots = (I - \mathcal{W})^{-1}\varepsilon\]
 
@@ -1504,15 +1504,16 @@ FSB Global Monitoring & NBFI penetration ratio by country & Annual & 2002--prese
 
 \subsection{Empirical Strategy}
 
-Project 3 traces three contagion channels, then unifies them in a quantile connectedness framework and a cascade simulation.
+Project 3 traces three contagion channels --- each with a specific NBFI mechanism --- then unifies them in a cascade simulation:
 
 
 \begin{adjustbox}{max width=\textwidth}
 \begin{minipage}{1.5\textwidth}
 \begin{verbatim}
-Channel 1 (Dollar Funding)  -+
-Channel 2 (Portfolio Flows)  -+--→  Module 4 (Cross-Country QVAR)  --→  Module 5 (GFC Amplification Panel)  --→  Module 6 (Cascade Sim)
-Channel 3 (Global Fin Cycle) -+
+Module 1 (Dollar Funding / FX Hedge)  --→  CIP stress amplified by NBFI hedging demand
+Module 2 (Procyclical Rebalancing)    --→  Fire-sale flows from open-end fund redemptions
+Module 3 (Cross-Border Amplification) --→  Channel-identified panel: how NBFI integration transmits GFC/GTC
+Module 4 (Cascade Simulation)         --→  Agent-based contagion: HF failure → PB → cross-border losses
 \end{verbatim}
 \end{minipage}
 \end{adjustbox}
@@ -1582,262 +1583,110 @@ Local equity return & $r_{c,t}^{EQ}$ & Country \$c\$ equity index return & Bloom
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
 
 
-\subsubsection{Module 2: Portfolio Flow Channel}
+\subsubsection{Module 2: Procyclical Rebalancing Channel}
 
-\textbf{Purpose}: Compare the volatility and cross-border connectedness of NBFI portfolio flows vs. bank flows.
-
-\textbf{Unit of observation}: Country \$c\$ $\times$ month \$t\$.
-
-\textbf{Input variables}:
+\textbf{Purpose}: Test whether cross-border portfolio flows are amplified by the share of assets managed by open-ended investment funds (OEFs), which face redemption-driven forced selling.
 
 
-{\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
-\hline
-\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
-\hline
-\endhead
-NBFI portfolio flows & $F_{c,t}^{NBFI}$ & Net cross-border fund flows (equity + bond funds) to country \$c\$ & EPFR Global & Monthly & Country \\
-\hline
-Bank flows & $F_{c,t}^{Bank}$ & Cross-border bank claims on country \$c\$ (change) & BIS Locational Banking Stats & Quarterly $\rightarrow$ Monthly (interp) & Country \\
-\hline
-VIX & --- & Stress proxy & FRED & Monthly & Global \\
-\hline
-GFC factor & $\text{GFC}_t$ & Global financial cycle (from Module 3 below) & PCA extraction & Monthly & Global \\
-\hline
-\end{longtable}
-}
+\paragraph{Economic Logic}
 
-\textbf{Analysis 1 --- Volatility comparison}: Compute rolling 12-month standard deviation of $F^{NBFI}_{c,t}$ vs. $F^{Bank}_{c,t}$ for each country. Test: $\sigma(F^{NBFI}) > \sigma(F^{Bank})$?
+Portfolio flows net to zero in aggregate --- every sale is someone else's purchase. The amplification question is whether the \textit{composition} of intermediation matters. Open-ended funds face a structural vulnerability: when investors redeem shares, the fund must liquidate assets regardless of price. This creates a procyclical channel:
 
-\textbf{Analysis 2 --- Diebold-Yilmaz connectedness on cross-country flows}:
-
-System: $Y_t = (F_{US,t}^{NBFI}, F_{UK,t}^{NBFI}, F_{EA,t}^{NBFI}, F_{JP,t}^{NBFI}, F_{EM,t}^{NBFI})'$ --- a 5-variable VAR of NBFI flows across major regions.
-
-Estimate VAR(4) and compute GFEVD at \$h = 10\$. Then repeat with bank flows. Compare: is total connectedness of NBFI flows higher than bank flows?
-
-\textbf{Estimation}: OLS VAR with \texttt{compute\_connectedness()} from \texttt{src/analysis/systemic\_risk.py}. Rolling window (60 months) for time-varying comparison.
-
-\textbf{Output}:
 \begin{enumerate}
-\item Bar chart: average flow volatility for NBFI vs. bank flows, by country group.
-\item Total connectedness comparison: $C^{NBFI}$ vs. $C^{Bank}$ --- expected: NBFI flows are more connected.
-\item Rolling connectedness plot: NBFI flow connectedness spiking during 2008, 2013, 2020.
+\item Global shock (VIX spike, GFC/GTC deterioration) $\rightarrow$ investor redemptions from OEFs
+\item OEFs forced to sell cross-border assets $\rightarrow$ outflows from recipient country \$c\$
+\item Fire-sale prices overshoot $\rightarrow$ further NAV decline $\rightarrow$ more redemptions (feedback loop)
+\item Countries where OEFs intermediate a larger share of cross-border flows see larger amplification
 
 \end{enumerate}
-
-\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
-
-
-\subsubsection{Module 3: Global Financial Cycle (GFC) Factor Extraction}
-
-\textbf{Purpose}: Extract the common factor driving international risky asset prices (Miranda-Agrippino \& Rey 2020) and test whether NBFI penetration amplifies its transmission to local financial conditions.
-
-\textbf{Unit of observation}: Global factor $\times$ month \$t\$ (extraction); Country \$c\$ $\times$ quarter \$t\$ (amplification test).
-
-\textbf{Input variables for factor extraction}:
+By contrast, closed-ended funds, pension funds, and banks do not face the same redemption pressure --- they can ride out mark-to-market losses.
 
 
-{\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
-\hline
-\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
-\hline
-\endhead
-International equity returns & $r_{c,t}$ & Monthly equity index returns for \$N\$ countries & Bloomberg / MSCI country indices & Monthly & Country \\
-\hline
-\end{longtable}
-}
+\paragraph{Estimation}
 
-\textbf{Countries}: US, UK, Germany, France, Japan, Canada, Australia, Korea, Singapore, Hong Kong, Brazil, Mexico, India, South Africa, Turkey + possibly China, Russia (20+ countries).
+\textbf{Test 1 --- Flow amplification}:
 
-\textbf{Factor extraction}:
-\begin{enumerate}
-\item Standardise each country's monthly equity returns: $\tilde{r}_{c,t} = (r_{c,t} - \bar{r}_c) / \sigma_c$.
-\item Apply PCA to the $N \times T$ matrix of standardised returns.
-\item The first principal component $\text{GFC}_t = \text{PC}_1(t)$ is the global financial cycle factor.
+\[\text{Flow}_{c,t}^{\text{NBFI}} = \alpha_c + \beta_1 \cdot \text{GFC}_t + \beta_2 \cdot \text{OEF\_Share}_{c} + \beta_3 \cdot (\text{GFC}_t \times \text{OEF\_Share}_{c}) + \gamma X_{c,t} + \varepsilon_{c,t}\]
 
-\end{enumerate}
-\textbf{Estimation details}:
-\begin{itemize}
-\item \texttt{extract\_global\_factor()} in \texttt{src/analysis/global\_financial\_cycle.py}.
-\item Uses \texttt{sklearn.decomposition.PCA} after \texttt{StandardScaler}.
-\item Typically $\text{PC}_1$ explains 30--40\% of total variance across countries.
-\item Rolling version: \texttt{rolling\_global\_factor(window=252, step=21)} re-estimates PCA on rolling windows.
+where $\text{Flow}_{c,t}^{\text{NBFI}}$ = net cross-border portfolio flows intermediated by NBFIs (from BIS LBS), $\text{OEF\_Share}_{c}$ = fraction of country \$c\$'s cross-border portfolio assets managed by open-ended funds (from FSB NBFI monitoring data), and $X_{c,t}$ = controls (GDP growth, exchange rate, interest rate differential).
 
-\end{itemize}
-\textbf{Output}: Monthly time series $\{\text{GFC}_t\}$ --- a single global factor. Plus: loadings per country (which countries load most heavily on the GFC) and explained variance ratio.
+\textbf{Key test}: $\beta_3 < 0$ --- during global stress ($\text{GFC}_t$ high), countries with higher OEF share see larger outflows.
 
+\textbf{Test 2 --- Differential behavior, NBFI vs. bank flows}:
 
-\paragraph{Extension: The Global Tail Cycle}
+Run the same specification separately for $\text{Flow}_{c,t}^{\text{NBFI}}$ and $\text{Flow}_{c,t}^{\text{Bank}}$ (bank-intermediated cross-border flows). The amplification coefficient $\beta_3$ should be significant only for NBFI flows.
 
-The standard GFC captures co-movement at the \textbf{mean} --- it answers ''do returns move together on average?'' But the relevant question for systemic risk is: \textbf{do they crash together?} A market can look diversified in normal times but exhibit near-perfect correlation during stress. The GFC misses this.
+\textbf{Test 3 --- Price impact}: Regress asset price changes on the predicted component of NBFI outflows (instrumented by $\text{GFC}_t \times \text{OEF\_Share}_{c}$) to confirm that fire-sale flows move prices.
 
-A \textbf{Global Tail Cycle (GTC)} extracts the common factor from \textbf{tail co-movements} --- correlations specifically in the left tail. There are two approaches:
+\textbf{Data}: BIS Locational Banking Statistics (cross-border flows by counterparty type), FSB Global Monitoring Report (OEF shares by country), EPFR fund-level flows (robustness).
 
-\textbf{(a) Tail dependence factor}: For each country pair \$(n,m)\$, compute the time-varying lower-tail dependence coefficient $\lambda_{nm,t}^L$ (using DCC-based tail dependence or exceedance correlations on a rolling window: joint probability of both being below the 5th percentile). Then extract the first principal component of the $\lambda^L$ matrix across all pairs --- this is the Global Tail Cycle.
-
-\textbf{(b) Quantile factor model} (Ando \& Bai 2020): Estimate a factor model directly at $\tau = 0.05$, extracting the first factor from a cross-country panel of equity returns at the 5th percentile. This literally is ''the common factor in left-tail outcomes.''
-
-The GTC is conceptually distinct from the standard GFC. The GFC could be high (assets correlated on average) while tail dependence is low (they don't crash together). Or the GFC could be moderate but the GTC very high (normal times look diversified, but stress is perfectly correlated). The GTC captures exactly the moment when diversification fails --- when VaR constraints bind simultaneously across jurisdictions and coordinated deleveraging amplifies the initial shock.
-
-\textbf{In Module 5}, both GFC and GTC enter the panel regression to test whether NBFI penetration amplifies \textit{average} co-movement (GFC interaction) vs. \textit{tail} co-movement (GTC interaction) differently.
+\textbf{Output}: Coefficient table for $\beta_3$ across flow types; scatter plot of predicted NBFI outflows vs. asset price declines during stress episodes.
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
 
 
-\subsubsection{Module 4: Cross-Country Quantile Connectedness}
+\subsubsection{Module 3: Cross-Border Amplification Panel}
 
-\textbf{Purpose}: Test whether cross-border financial connectedness is asymmetric --- dramatically higher in the left tail than at the median.
-
-\textbf{Unit of observation}: System of \$k\$ country returns $\times$ week \$t\$.
-
-\textbf{Input variables}:
+\textbf{Purpose}: Identify \textit{which NBFI integration channels} amplify the transmission of global shocks to domestic financial conditions, using the counterparty decomposition developed in Project 1.
 
 
-{\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
-\hline
-\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
-\hline
-\endhead
-Country equity returns & $r_{c,t}$ & Weekly log-returns for major equity indices & Bloomberg & Weekly & Country \\
-\hline
-USD funding proxy & $\text{USD}_t$ & Change in trade-weighted USD index or 3M CIP basis & Bloomberg / FRED & Weekly & Global \\
-\hline
-\end{longtable}
-}
+\paragraph{Economic Logic}
 
-\textbf{System}: $Y_t = (r_t^{US}, r_t^{UK}, r_t^{EU}, r_t^{JP}, r_t^{EM}, \text{USD}_t)'$ --- a \textbf{6-variable Quantile VAR} of cross-country returns plus dollar funding.
+The key insight from the user's critique is that NBFI ''penetration'' is not a single number. The effects of shocks depend on \textit{how} NBFIs are integrated in the financial sector:
 
-\textbf{Model specification} --- identical to P2 Module 3 (QVAR):
+\begin{itemize}
+\item \textbf{NBFI borrows from foreign banks} (for-borrow): creates dollar funding vulnerability (links to Module 1)
+\item \textbf{NBFI borrows from domestic banks} (bank-borrow): creates domestic credit risk transmission
+\item \textbf{NBFI lends to private sector} (priv-lend): creates real economy exposure through non-bank credit
+\item \textbf{NBFI participates in FX hedging} (fx-hedge): creates FX swap market stress channel (links to Project 4)
 
-\[Q_{\tau}(y_{i,t} \mid Y_{t-1}, \ldots, Y_{t-p}) = c_i(\tau) + \sum_{j=1}^{6} \sum_{l=1}^{p} \beta_{ij}^{(l)}(\tau) \, y_{j,t-l}\]
+\end{itemize}
+Each channel has a different amplification mechanism, and lumping them together in a single ''NBFI size'' variable would obscure the results.
 
-\textbf{Estimation}: Equation-by-equation \texttt{QuantReg}, lags \$p = 4\$, quantiles $\tau \in \{0.05, 0.50, 0.95\}$, GFEVD at \$h = 10\$.
 
-\textbf{Key prediction}: Total connectedness at $\tau = 0.05 \gg \tau = 0.50$ --- cross-border contagion is much stronger during stress.
+\paragraph{Estimation}
 
-\textbf{Rolling version}: Window = 60 weeks, step = 1. Time series of $C_t(0.05)$ and $C_t(0.50)$ through GFC 2008, Taper Tantrum 2013, COVID 2020.
+\textbf{Main specification} --- Panel regression with NBFI counterparty decomposition:
 
-\textbf{Output}:
-\begin{enumerate}
-\item Total connectedness at each quantile: \$C(0.05)\$, \$C(0.50)\$, \$C(0.95)\$.
-\item Pairwise GFEVD matrices at $\tau = 0.05$ vs. \$0.50\$ (heatmaps).
-\item Directional spillovers: which countries are net transmitters of tail risk.
-\item Rolling plot: $C_t(0.05)$ and $C_t(0.50)$ over time.
+\[y_{c,t} = \alpha_c + \delta_t + \sum_{k} \beta_k \cdot \text{NBFI}_{c,t-1}^{(k)} + \sum_{k} \gamma_k \cdot (\text{Shock}_t \times \text{NBFI}_{c,t-1}^{(k)}) + \theta X_{c,t} + \varepsilon_{c,t}\]
 
-\end{enumerate}
+where:
+\begin{itemize}
+\item $y_{c,t}$ = domestic financial conditions index (credit spread, or Growth-at-Risk 5th percentile from quantile regression of GDP growth on financial conditions)
+\item $\text{NBFI}_{c,t-1}^{(k)}$ = lagged NBFI counterparty shares, $k \in \{$for-borrow, bank-borrow, priv-lend, fx-hedge$\}$
+\item $\text{Shock}_t$ = global shock measure. Two alternatives:
+\item GFC (Global Financial Cycle): first principal component of risky asset prices (Rey 2015)
+\item GTC (Global Tail Cycle): common factor in left-tail co-movements (from Project 2)
+\item $\delta_t$ = time fixed effects, which \textbf{absorb the direct effect of GFC/GTC} --- identification comes purely from \textit{cross-country variation} in NBFI structure
+\item $X_{c,t}$ = controls: GDP growth, policy rate, exchange rate regime, capital account openness
+
+\end{itemize}
+\textbf{Key tests}:
+\begin{itemize}
+\item $\gamma_{\text{for-borrow}} < 0$: countries where NBFIs borrow more from foreign banks see worse financial conditions during global stress
+\item $\gamma_{\text{priv-lend}} < 0$: countries where NBFIs intermediate more credit to the private sector see larger real economy impact
+\item Compare magnitudes: which channel dominates?
+
+\end{itemize}
+\textbf{Instrumental variable strategy}: To address endogeneity of NBFI structure, instrument $\text{Shock}_t$ with US monetary policy surprises (Jarocinski \& Karadi 2020). The exclusion restriction: US MP shocks affect country \$c\$ only through global financial conditions, not directly through bilateral NBFI linkages.
+
+\textbf{Extensions}:
+\begin{itemize}
+\item Replace $y_{c,t}$ with 5th-percentile GDP growth (Growth-at-Risk) to test tail effects
+\item Interact with state-dependence indicator: $\mathbb{1}[\text{VIX}_t > \text{VIX}_{80\text{th pctile}}]$ to test whether amplification is non-linear
+\item Use GTC instead of GFC as the shock measure --- if GTC interactions are stronger, it confirms that tail co-movements (not just average cycles) drive amplification
+
+\end{itemize}
+\textbf{Data}: BIS LBS (NBFI counterparty decomposition), IMF IFS (financial conditions), Jarocinski-Karadi MP shocks, GFC from Project 2, GTC from Project 2.
+
+\textbf{Output}: Coefficient table for $\gamma_k$ across channels; bar chart comparing amplification magnitudes by NBFI integration type; GFC vs. GTC comparison.
+
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
 
 
-\subsubsection{Module 5: GFC Amplification Panel Regression}
-
-\textbf{Purpose}: Test whether NBFI penetration amplifies the transmission of the Global Financial Cycle to local financial conditions. This is the causal core of Project 3.
-
-\textbf{Unit of observation}: Country \$c\$ $\times$ quarter \$t\$.
-
-\textbf{Input variables}:
-
-
-{\small
-\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
-\hline
-\textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
-\hline
-\endhead
-Local credit growth & $y_{c,t}$ & Credit-to-GDP growth or local equity return & BIS Credit Statistics; Bloomberg & Quarterly & Country \\
-\hline
-GFC factor & $\text{GFC}_t$ & From Module 3 & Module 3 output & Monthly $\rightarrow$ Quarterly & Global \\
-\hline
-NBFI penetration & $\text{NBFI}_{c,t}$ & NBFI assets as \% of GDP in country \$c\$ & FSB Global Monitoring Report & Annual (interp. to quarterly) & Country \\
-\hline
-Interaction & $\text{GFC}_t \times \text{NBFI}_{c,t}$ & Tests amplification & Constructed & Quarterly & Country \\
-\hline
-Bank-NBFI connectedness & $\text{Conn}_{c,t}$ & Bilateral bank-NBFI exposure (from BIS) or rolling Granger-causality measure & BIS / constructed & Quarterly & Country \\
-\hline
-\end{longtable}
-}
-
-\textbf{Model specification --- OLS panel (baseline)}:
-
-\[y_{c,t} = \alpha_c + \beta_1 \cdot \text{GFC}_t + \beta_2 \cdot \text{NBFI}_{c,t} + \beta_3 \cdot (\text{GFC}_t \times \text{NBFI}_{c,t}) + \gamma \cdot X_{c,t} + \varepsilon_{c,t}\]
-
-where $\alpha_c$ = country fixed effects.
-
-\textbf{Key parameter}: $\beta_3$. If $\beta_3 > 0$: countries with larger NBFI sectors experience \textit{stronger} transmission of the global financial cycle to local credit conditions. This is the amplification effect.
-
-
-\paragraph{NBFI Counterparty Decomposition}
-
-A single $\text{NBFI}_{c,t}$ measure (assets as \% of GDP) is too coarse --- it conflates NBFI activities with completely different systemic implications. The results differ fundamentally depending on whether NBFIs:
-\begin{itemize}
-\item Lend to domestic banks vs. borrow from domestic banks
-\item Lend to foreigners vs. borrow from foreigners
-\item Lend to or borrow from the domestic private sector
-
-\end{itemize}
-A country where NBFIs primarily borrow from domestic banks and lend to the private sector (credit intermediation model) has a different GFC transmission profile than one where NBFIs borrow from foreigners and trade derivatives with domestic banks (market intermediation model).
-
-\textbf{Extended specification} --- replace aggregate NBFI with counterparty-decomposed measures:
-
-\[y_{c,t} = \alpha_c + \beta_1 \cdot \text{GFC}_t + \sum_k \beta_{2,k} \cdot \text{NBFI}_{c,t}^{(k)} + \sum_k \beta_{3,k} \cdot (\text{GFC}_t \times \text{NBFI}_{c,t}^{(k)}) + \gamma X_{c,t} + \varepsilon_{c,t}\]
-
-where \$k\$ indexes NBFI activity types:
-\begin{itemize}
-\item $\text{NBFI}^{\text{bank-borrow}}$: NBFI borrowing from domestic banks (repo, credit lines) $\rightarrow$ captures credit risk channel
-\item $\text{NBFI}^{\text{bank-lend}}$: NBFI lending to domestic banks (deposits, bank bonds) $\rightarrow$ captures funding risk channel
-\item $\text{NBFI}^{\text{foreign-borrow}}$: NBFI cross-border borrowing $\rightarrow$ captures imported funding shock channel
-\item $\text{NBFI}^{\text{foreign-lend}}$: NBFI cross-border lending $\rightarrow$ captures outward transmission channel
-\item $\text{NBFI}^{\text{private-lend}}$: NBFI lending to private sector $\rightarrow$ captures real economy credit channel
-
-\end{itemize}
-The $\beta_{3,k}$ coefficients reveal \textit{which type} of NBFI activity amplifies GFC transmission most. The hypothesis: $\beta_{3,\text{foreign-borrow}}$ is largest (countries whose NBFIs rely on foreign funding are most vulnerable to global shocks), while $\beta_{3,\text{private-lend}}$ may actually be \textit{stabilising} (credit intermediation provides a buffer).
-
-\textbf{Data source}: ''From-whom-to-whom'' financial accounts --- Fed Z.1, ECB Financial Accounts, OECD institutional sector accounts.
-
-
-\paragraph{Global Tail Cycle extension}
-
-Replace the standard GFC with the Global Tail Cycle (from Module 3 extension):
-
-\[y_{c,t} = \alpha_c + \beta_1^{\text{GFC}} \cdot \text{GFC}_t + \beta_1^{\text{GTC}} \cdot \text{GTC}_t + \beta_3^{\text{GFC}} \cdot (\text{GFC}_t \times \text{NBFI}_{c,t}) + \beta_3^{\text{GTC}} \cdot (\text{GTC}_t \times \text{NBFI}_{c,t}) + \ldots\]
-
-If $\beta_3^{\text{GTC}} \gg \beta_3^{\text{GFC}}$: NBFI penetration amplifies \textit{tail} co-movement far more than \textit{average} co-movement --- confirming that the NBFI systemic risk channel is fundamentally a tail phenomenon.
-
-\textbf{IV specification} (addresses endogeneity of GFC --- reverse causality from local conditions to global factor):
-
-\begin{itemize}
-\item \textbf{Instrument}: US monetary policy shocks (Jarocinski \& Karadi 2020 high-frequency identification).
-\item \textbf{First stage}: $\text{GFC}_t = \pi_0 + \pi_1 \cdot \text{USMPshock}_t + v_t$.
-\item \textbf{Second stage}: $y_{c,t} = \alpha_c + \beta_1 \cdot \widehat{\text{GFC}}_t + \beta_2 \cdot \text{NBFI}_{c,t} + \beta_3 \cdot (\widehat{\text{GFC}}_t \times \text{NBFI}_{c,t}) + \varepsilon_{c,t}$.
-\item \textbf{Relevance}: First-stage F-statistic \$> 10\$ (strong instrument).
-
-\end{itemize}
-\textbf{NBFI penetration endogeneity}: NBFI share instrumented with (a) legal origin (La Porta et al. 1998) for cross-section, (b) lagged pension reform dummies for within-country variation.
-
-\textbf{Estimation details}:
-\begin{itemize}
-\item OLS: \texttt{panel\_gfc\_regression()} in \texttt{src/analysis/global\_financial\_cycle.py}. Country fixed effects via dummy variables. Standard errors clustered by country.
-\item IV: \texttt{iv\_gfc\_regression()} --- manual 2SLS (first stage, fitted values, second stage). Reports first-stage F-stat.
-\item Alternative: \texttt{connectedness\_amplification\_test()} replaces NBFI size with bank-NBFI \textit{connectedness} as the interaction variable (tests whether network structure, not just NBFI size, matters).
-
-\end{itemize}
-\textbf{Output}:
-\begin{enumerate}
-\item OLS coefficient table: $\beta_1, \beta_2, \beta_3$ with standard errors, p-values.
-\item IV coefficient table: same structure with 2SLS estimates.
-\item Scatter plot: GFC factor vs. local credit growth, split by high- vs. low-NBFI countries.
-\item Interpretation: e.g., ''A 1-SD negative GFC shock reduces credit growth by 0.5 pp in low-NBFI countries but by 1.2 pp in high-NBFI countries.''
-
-\end{enumerate}
-
-\bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
-
-
-\subsubsection{Module 6: Contagion Cascade Simulation}
+\subsubsection{Module 4: Contagion Cascade Simulation}
 
 \textbf{Purpose}: Agent-based simulation of a cross-border contagion event: US hedge fund failure $\rightarrow$ prime broker losses $\rightarrow$ multi-round forced deleveraging $\rightarrow$ cross-border loss propagation.
 
@@ -1897,35 +1746,29 @@ Initial shock & -4\% across all assets & Scenario \\
 \begin{adjustbox}{max width=\textwidth}
 \begin{minipage}{1.5\textwidth}
 \begin{verbatim}
-+-----------------+  +-----------------+  +-----------------+
-| Module 1: Dollar |  | Module 2: Port. |  | Module 3: GFC   |
-| Funding Channel  |  | Flow Channel    |  | Factor Extract  |
-| CIP basis x NBFI|  | NBFI vs bank    |  | PCA on intl     |
-| quantile regr.   |  | flow connect.   |  | equity returns  |
-+--------+--------+  +--------+--------+  +--------+--------+
-         |                    |                     |
-         +------------+-------+                     |
-                      v                             |
-         +------------------------+                 |
-         | Module 4: Cross-Country|                 |
-         | Quantile Connectedness |                 |
-         | QVAR on country returns|                 |
-         | C(0.05) >> C(0.50)?   |                 |
-         +------------+-----------+                 |
-                      |                             |
-                      v                             v
-         +------------------------------------------------+
-         | Module 5: GFC Amplification Panel              |
-         | y_ct = alpha_c + beta_1*GFC + beta_2*NBFI + beta_3*(GFCxNBFI)|
-         | OLS + IV (US MP shocks)                        |
-         +--------------------+---------------------------+
-                              |
-                              v
-         +------------------------------------------------+
-         | Module 6: Cascade Simulation                   |
-         | HF failure → PB losses → cross-border          |
-         | deleveraging (Eisenberg-Noe + Kyle)            |
-         +------------------------------------------------+
++-------------------------------+
+| Module 1: Dollar Funding      | FXHedge x VIX → CIP stress at tails
+| (country-level quantile reg.) |
++---------------+---------------+
+                | feeds fx-hedge channel into Module 3
+                |
++---------------+---------------+
+| Module 2: Procyclical         | OEF_Share x GFC → fire-sale outflows
+| Rebalancing (flow regressions)|
++---------------+---------------+
+                | predicted flows enter Module 3 as instrument
+                |
++---------------+---------------+
+| Module 3: Cross-Border        | NBFI counterparty decomposition x Shock
+| Amplification Panel           | → domestic financial conditions / GaR
+| (channel-identified)          |
++---------------+---------------+
+                | calibrates shock amplification for simulation
+                |
++---------------+---------------+
+| Module 4: Cascade Simulation  | HF failure → PB losses → cross-border
+| (Eisenberg-Noe + Kyle)        | deleveraging with amplification from M1-M3
++-------------------------------+
 \end{verbatim}
 \end{minipage}
 \end{adjustbox}
