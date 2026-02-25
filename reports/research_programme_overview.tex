@@ -36,9 +36,6 @@
   framexleftmargin=0.5em
 }
 
-% Allow line breaks at underscores and slashes in \texttt
-\renewcommand{\texttt}[1]{\begingroup\ttfamily\hyphenchar\font=`\-\spaceskip=.5em plus .3em minus .2em #1\endgroup}
-
 % Spacing
 \usepackage{setspace}
 \onehalfspacing
@@ -58,8 +55,6 @@
 \author{Sergio Sola}
 \date{February 2026}
 
-\tolerance=1000
-\emergencystretch=3em
 \begin{document}
 \maketitle
 \thispagestyle{empty}
@@ -217,7 +212,7 @@ Module 1 (Implied Leverage)  --→  Module 2 (Bipartite Network)  --→  Module 
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -239,7 +234,7 @@ Delta-equivalence factor & $\delta$ & Scaling factor converting gross notional t
 
 \[\text{Implied Leverage}_{s,t} = \frac{E_{s,t} + R_{s,t} + \delta \cdot D_{s,t}}{E_{s,t}}\]
 
-\textbf{Worked example}: A hedge fund sector with $E = \$10$B equity, $R = \$40$B repo borrowing, and $D = \$500$B IRS notional (with $\delta = 0.05$) has implied leverage of $(10 + 40 + 0.05 \times 500)/10 = 7.5\times$.
+\textbf{Worked example}: A hedge fund sector with $E = \$10\text{B}\$ equity, $R = \$40\text{B}\$ repo borrowing, and $D = \$500\text{B}\$ IRS notional (with $\delta = 0.05$) has implied leverage of $(10 + 40 + 0.05 \times 500)/10 = 7.5\times$.
 
 \textbf{Estimation details}:
 \begin{itemize}
@@ -260,18 +255,41 @@ Delta-equivalence factor & $\delta$ & Scaling factor converting gross notional t
 
 \textbf{Purpose}: Map the bilateral exposure network between G-SIB banks and NBFI sub-sectors, weighted by both exposure amounts and the implied leverage from Module 1.
 
-\textbf{Unit of observation}: Directed edge from bank \$i\$ to NBFI sub-sector \$j\$ $\times$ quarter \$t\$.
 
-\textbf{Input variables}:
+\paragraph{Geographic Dimension of Exposures}
+
+The economically correct unit of observation is:
+
+\[\text{Exp}_{n,i,j,m,t} = \text{exposure of bank } i \text{ in country } n \text{ to NBFI sub-sector } j \text{ in country } m \text{ at time } t\]
+
+However, bilateral bank-by-NBFI-by-country data is generally unavailable. The realistic data structure is \textbf{semi-bilateral}: for each NBFI sub-sector \$j\$ in country \$n\$, we observe total cross-border exposure to the rest of the world, $\text{Exp}_{j,n,t}^{\text{RoW}}$, but not the specific \$(n,m)\$ counterparty breakdown at the sub-sector level. This means:
+
+\begin{itemize}
+\item \textbf{Domestic exposures}: Where bilateral data exists (e.g., US via OFR, EU via ECB MMSR), we can construct full bank-by-NBFI matrices within a jurisdiction.
+\item \textbf{Cross-border exposures}: Available only as (sub-sector \$j\$, country \$n\$) $\rightarrow$ rest-of-world aggregates (from BIS Locational Banking Statistics, which report bank claims on/liabilities to non-bank financial institutions by country, but not by NBFI sub-type across borders).
+
+\end{itemize}
+In practice, $W_t$ is constructed as a \textbf{two-tier structure}:
+\begin{enumerate}
+\item \textbf{Within-jurisdiction}: Full \$(i,j)\$ bilateral matrix where OFR/ECB data permits.
+\item \textbf{Cross-border}: $(j,n) \to \text{RoW}$ aggregate exposures, allocated proportionally using BIS country-level banking statistics as weights.
+
+\end{enumerate}
+This is an honest limitation. We can still compute system-wide amplification ($\lambda_1$), but the cross-border contagion paths are identified at the country level rather than the bank-NBFI pair level. The geographic decomposition connects directly to Project 3 (cross-border contagion).
+
+
+\paragraph{Input variables}
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
 \endhead
-Bilateral exposure & $\text{Exp}_{ij,t}$ & Bank \$i\$'s total exposure (repo lending + derivatives counterparty) to NBFI sub-sector \$j\$ & BIS Locational Banking Stats; OFR bilateral repo data & Quarterly & Bank $\times$ NBFI sub-sector \\
+Bilateral exposure (domestic) & $\text{Exp}_{ij,t}$ & Bank \$i\$'s total exposure to NBFI sub-sector \$j\$ (within jurisdiction) & OFR bilateral repo data (US); ECB MMSR (EU) & Quarterly & Bank $\times$ NBFI sub-sector \\
+\hline
+Cross-border exposure & $\text{Exp}_{j,n,t}^{\text{RoW}}$ & Total exposure of NBFI sub-sector \$j\$ in country \$n\$ to rest-of-world & BIS Locational Banking Stats & Quarterly & Sub-sector $\times$ country \\
 \hline
 Implied leverage & $\text{Lev}_{j,t}$ & From Module 1 & Module 1 output & Quarterly & NBFI sub-sector \\
 \hline
@@ -280,24 +298,67 @@ Institution metadata & --- & Bank names, NBFI sub-sector classification, country
 \end{longtable}
 }
 
-\textbf{Network construction}:
 
-The network is a \textbf{directed weighted bipartite graph} $G_t = (V_B \cup V_N, E_t)$ where:
-\begin{itemize}
-\item $V_B$ = set of G-SIB banks (nodes on one side)
-\item $V_N$ = set of NBFI sub-sectors (nodes on the other side)
-\item $E_t$ = set of directed edges with two types:
-\item \textbf{Repo lending}: bank $i \to$ NBFI \$j\$ (bank lends cash, NBFI posts collateral)
-\item \textbf{Derivatives counterparty risk}: NBFI $j \to$ bank \$i\$ (NBFI's potential default affects bank)
+\paragraph{Network construction}
 
-\end{itemize}
+The network is a \textbf{directed weighted bipartite graph} $G_t = (V_B \cup V_N, E_t)$ where $V_B$ = G-SIB banks, $V_N$ = NBFI sub-sectors, and $E_t$ = directed edges representing credit and funding relationships.
+
+
+\paragraph{Construction of the Adjacency Matrix $W_t$}
+
 The \textbf{exposure-weighted adjacency matrix} is:
 
-\[W_{ij,t} = \frac{\text{Exp}_{ij,t} \times \text{Lev}_{j,t}}{\sum_k \text{Exp}_{ik,t} \times \text{Lev}_{k,t}}\]
+\[W_{ij,t}^{\text{credit}} = \frac{\text{Exp}_{ij,t} \times \text{Lev}_{j,t}}{\sum_k \text{Exp}_{ik,t} \times \text{Lev}_{k,t}}\]
 
-This normalises by the total leverage-weighted exposure of bank \$i\$, so each row sums to 1.
+\textbf{Why multiply by leverage?} The logic is a \textbf{fire-sale argument}. Consider bank $i$ that has lent \$100M to NBFI sub-sector $j$ via repo. If $j$ is leveraged $2\times$, a 10\% asset price decline wipes out 20\% of its equity --- painful but survivable. If $j$ is leveraged $10\times$, the same 10\% decline wipes out 100\% of equity --- triggering forced liquidation, fire sales, and potential default. The loss that cascades back to bank $i$ is therefore proportional not just to the raw exposure $\text{Exp}_{ij,t}$ but to the \textit{leverage-adjusted exposure} $\text{Exp}_{ij,t} \times \text{Lev}_{j,t}$. Leverage acts as an amplifier: the same dollar of exposure to a highly-leveraged counterparty poses far more systemic risk than to a low-leverage one.
 
-\textbf{Estimation details}:
+The row-normalisation (dividing by $\sum_k$) ensures each row sums to 1, giving the \textit{share} of bank $i$'s leverage-weighted risk that comes from each NBFI sub-sector.
+
+
+\paragraph{Two Directions of Risk: Credit vs. Funding}
+
+The matrix $W^{\text{credit}}$ captures only one direction --- \textbf{credit/fire-sale risk} (bank's loss from NBFI distress). There is a second, equally important direction --- \textbf{funding risk} (NBFI's loss from bank funding withdrawal):
+
+\[W_{ji,t}^{\text{funding}} = \frac{\text{Exp}_{ji,t} \times \text{Lev}_{i,t}}{\sum_k \text{Exp}_{jk,t} \times \text{Lev}_{k,t}}\]
+
+This captures: NBFI sub-sector \$j\$ depends on bank \$i\$ for repo funding or credit lines. If bank \$i\$ is highly leveraged and its own VaR constraint binds, it pulls back funding (raises haircuts, calls margin, refuses to roll repo). The severity depends on how leveraged bank \$i\$ is --- more leveraged banks are more likely to pull funding when stressed.
+
+The full picture requires \textbf{both matrices}: $W^{\text{credit}}$ (bank exposed to NBFI fire sale) and $W^{\text{funding}}$ (NBFI exposed to bank funding withdrawal). The combined system is a single non-symmetric matrix where:
+\begin{itemize}
+\item Entry \$(i,j)\$: bank \$i\$'s credit risk from NBFI \$j\$ (weighted by NBFI leverage)
+\item Entry \$(j,i)\$: NBFI \$j\$'s funding risk from bank \$i\$ (weighted by bank leverage)
+
+\end{itemize}
+For the HLI spectral analysis (Module 3), we use the combined matrix. The spectral radius of the combined system captures the \textit{total amplification potential} from both credit and funding channels operating simultaneously.
+
+
+\paragraph{NBFI Counterparty Decomposition}
+
+A critical refinement: the systemic risk implications of NBFI activity depend fundamentally on \textbf{who the NBFI transacts with}. An NBFI sub-sector's balance sheet should be decomposed by counterparty:
+
+
+{\small
+\begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
+\hline
+\textbf{Domestic banks} & \textbf{Foreign counterparties} & \textbf{Domestic private sector} \\
+\hline
+\endhead
+\textbf{NBFI assets (lends to)} & Repo lending, deposits, bank bonds $\rightarrow$ NBFI is \textit{funding source} for banks & Cross-border portfolio holdings, FX swaps $\rightarrow$ NBFI transmits shocks \textit{outward} \\
+\hline
+\textbf{NBFI liabilities (borrows from)} & Repo borrowing, credit lines, prime brokerage $\rightarrow$ Bank exposed to NBFI \textit{credit risk} & Cross-border funding, FX swap borrowing $\rightarrow$ NBFI \textit{imports} foreign funding shocks \\
+\hline
+\end{longtable}
+}
+
+Each cell creates a different contagion channel with different speed, amplification, and policy implications. A country where NBFIs primarily borrow from domestic banks and lend to the private sector (credit intermediation model) has a completely different risk profile from one where NBFIs borrow from foreigners and trade derivatives with domestic banks (market intermediation model).
+
+\textbf{Data source}: ''From-whom-to-whom'' financial accounts --- Fed Z.1 (US), ECB Financial Accounts (euro area), OECD institutional sector accounts (broader coverage).
+
+\textbf{Implication for the adjacency matrix}: Where from-whom-to-whom data is available, $W_t$ can be disaggregated by counterparty type, enabling separate spectral analyses for credit-intermediation vs. market-intermediation risk channels.
+
+
+\paragraph{Estimation details}
+
 \begin{itemize}
 \item No econometric estimation --- this is a data construction step.
 \item Network is built using \texttt{networkx} (Python). The function \texttt{build\_exposure\_network()} creates a \texttt{DiGraph} from the exposure panel.
@@ -305,14 +366,18 @@ This normalises by the total leverage-weighted exposure of bank \$i\$, so each r
 \item The network evolves quarterly from 2015Q1 to 2024Q4 (limited by BIS sectoral breakdown availability; extended to 2013 where OFR bilateral data permits).
 
 \end{itemize}
-\textbf{Output}:
+
+\paragraph{Output}
+
 \begin{itemize}
-\item A time series of adjacency matrices $W_t$ (one per quarter, dimension: $n_{\text{banks}} \times n_{\text{NBFI sectors}}$).
+\item A time series of adjacency matrices $W_t^{\text{credit}}$ and $W_t^{\text{funding}}$ (one pair per quarter).
+\item Combined (non-symmetric) matrix for spectral analysis.
 \item Centrality rankings for each node at each date.
 \item Network summary statistics over time: density, total exposure, HHI (concentration), reciprocity.
+\item Decomposition of cross-border vs. domestic exposure shares over time.
 
 \end{itemize}
-\textbf{$\rightarrow$ Link to Module 3}: The adjacency matrix $W_t$ is the direct input to the spectral analysis. The HLI is the largest eigenvalue of $W_t$.
+\textbf{$\rightarrow$ Link to Module 3}: The combined adjacency matrix $W_t$ is the direct input to the spectral analysis. The HLI is the largest eigenvalue of $W_t$.
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -328,7 +393,7 @@ This normalises by the total leverage-weighted exposure of bank \$i\$, so each r
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -344,13 +409,26 @@ Adjacency matrix & $W_t$ & Leverage-weighted exposure matrix from Module 2 & Mod
 
 where $\lambda_1(W_t)$ is the \textbf{largest eigenvalue} (spectral radius) of the normalised exposure matrix $W_t$.
 
-\textbf{Economic intuition} (Acemoglu, Ozdaglar \& Tahbaz-Salehi 2015): The spectral radius captures the \textit{maximum amplification factor} of the network. If a shock hits one node, the total cascade of losses through the network is bounded by a function of $\lambda_1$. When $\lambda_1$ is high, the network is ''tightly wound'' --- shocks propagate and amplify. When $\lambda_1$ is low, the network is loosely connected and shocks dissipate.
+\textbf{Economic intuition --- network amplification, not PCA} (Acemoglu, Ozdaglar \& Tahbaz-Salehi 2015): The spectral radius is \textit{not} a statistical summary like PCA's first component --- it is a \textbf{structural measure of the network's amplification capacity}. The logic is a cascade argument:
+
+Consider a shock $\varepsilon$ hitting one node. Through the network, losses propagate: node \$j\$'s distress hits bank \$i\$ with weight $W_{ij}$, then \$i\$'s distress hits others with weight $W_{ki}$, and so on. After \$n\$ rounds, total losses are:
+
+\[\text{Total loss} \propto \varepsilon + W\varepsilon + W^2\varepsilon + W^3\varepsilon + \ldots = (I - W)^{-1}\varepsilon\]
+
+This geometric series converges if and only if $\lambda_1(W) < 1$. The \textbf{rate of amplification} is governed by $\lambda_1$:
+\begin{itemize}
+\item $\lambda_1$ close to 0: shocks dissipate quickly. The network is ''loose.''
+\item $\lambda_1$ close to 1: shocks amplify through many rounds before dying out. The network is ''tightly wound'' --- approaching the instability threshold.
+
+\end{itemize}
+The \textbf{eigenvector} associated with $\lambda_1$ also matters --- it identifies \textbf{which nodes are most central to the amplification}. If the leading eigenvector loads heavily on hedge funds, that is where systemic risk concentrates.
 
 \textbf{Estimation details}:
 \begin{itemize}
-\item Computed via \texttt{numpy.linalg.eigvals(W\_t)} at each quarter.
+\item Computed via \texttt{numpy.linalg.eigvals(W\_t)} at each quarter on the combined (credit + funding) matrix.
 \item No estimation --- this is a deterministic transformation of $W_t$.
 \item Robustness: also compute the second eigenvalue $\lambda_2$ (captures secondary amplification channels) and the spectral gap $\lambda_1 - \lambda_2$ (captures how ''dominant'' the main amplification channel is).
+\item Separate spectral analysis on $W^{\text{credit}}$ vs. $W^{\text{funding}}$ to identify which direction of risk dominates amplification.
 
 \end{itemize}
 \textbf{Output}: A quarterly time series $\{\text{HLI}_t\}_{t=2013Q1}^{2024Q4}$ --- a single number per quarter measuring systemic amplification potential.
@@ -388,7 +466,7 @@ Module 4 has \textbf{three sub-analyses}, all using the HLI from Module 3 as a k
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -453,7 +531,7 @@ This is a standard VAR except that \textit{every coefficient depends on the quan
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -500,7 +578,7 @@ Note: HLI is \textbf{lagged} (predictive, not contemporaneous) to address endoge
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -681,17 +759,17 @@ explaining the resilience puzzle.
 Project 2 has \textbf{five modules}. Module 1 establishes the micro-foundation (VaR-constraint channel). Modules 2--3 provide the econometric core. Modules 4--5 address variance effects and the 2022--23 puzzle.
 
 
-{\small
-\noindent\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 1}\\VaR Channel\\[2pt]\scriptsize Sub-sector $\beta_s$\\procyclicality\\+ fire-sale sim}}%
-\hfill$\to$\hfill%
-\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 2}\\DCC-GARCH\\[2pt]\scriptsize Time-varying\\bank--NBFI\\correlations}}%
-\hfill$\to$\hfill%
-\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 3}\\Quantile VAR\\[2pt]\scriptsize Tail-specific MP\\transmission\\IRFs + connect.}}%
-\hfill$\to$\hfill%
-\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 4}\\LS-GaR\\[2pt]\scriptsize NBFI leverage\\fattens tails\\(variance ch.)}}%
-\hfill$\to$\hfill%
-\fbox{\parbox{0.17\textwidth}{\centering\textbf{Module 5}\\Banerjee\\Puzzle\\[2pt]\scriptsize Within-OFI vs\\OFI-to-real\\economy split}}
-}
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
+\begin{verbatim}
+Module 1 (VaR Channel)  --→  Module 2 (DCC-GARCH)  --→  Module 3 (Quantile VAR)  --→  Module 4 (LS-GaR)  --→  Module 5 (Banerjee Puzzle)
+       ↓                            ↓                           ↓                          ↓                        ↓
+  Sub-sector beta_s            Time-varying bank-         Tail-specific MP              NBFI leverage         Within-OFI vs
+  procyclicality            NBFI correlations          transmission IRFs             fattens tails         OFI-to-real
+  + fire-sale sim           (regime detection)         + connectedness               (variance channel)    economy split
+\end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -727,7 +805,7 @@ The reverse is more dangerous. When asset prices fall, VaR rises, breaching the 
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -814,7 +892,7 @@ where $\text{Stress}_t$ = dummy for quarters with VIX \$>\$ 75th percentile (or 
 \endhead
 Initial shock & --- & Exogenous decline in asset prices & -5\% \\
 \hline
-Market depth & $\lambda^{-1}$ & Kyle (1985) price impact parameter (\$ volume needed to move price 1\%) & \$500K (calibrated) \\
+Market depth & $\lambda^{-1}$ & Kyle (1985) price impact parameter (\$ volume needed to move price 1\%) & \\$500K (calibrated) \\
 \hline
 VaR confidence & $z_\alpha$ & Confidence level for VaR constraint & 99\% (banks), 95--99.5\% (NBFIs) \\
 \hline
@@ -874,7 +952,7 @@ NBFI system & --- & 20 entities: 5 HFs (leverage 5--25$\times$), 8 investment fu
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -949,7 +1027,7 @@ where:
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -983,13 +1061,53 @@ The choice of variables is driven by the economic question: we want to trace how
 
 For each of the 7 equations, the dependent variable $y_{i,t}$ is regressed on \$p\$ lags of all 7 variables. This gives $7 \times (7p + 1)$ coefficients \textit{at each quantile}.
 
+
+\paragraph{What the QVAR captures (and what it does not)}
+
+A standard VAR models the conditional \textbf{mean} of each variable: $E[y_{i,t} | Y_{t-1}]$. The coefficients are the same regardless of whether we are in calm or stressed times. This is a strong assumption --- it says the transmission mechanism is symmetric.
+
+The Quantile VAR replaces the conditional mean with the conditional \textbf{quantile}: $Q_\tau(y_{i,t} | Y_{t-1})$. Now \textbf{every coefficient depends on $\tau$}. Critically, this does \textit{not} mean ''where is the regressor in its distribution.'' It means: \textbf{what predicts the $\tau$-th quantile of the dependent variable?}
+
+\begin{itemize}
+\item At $\tau = 0.50$: you model the \textbf{median} of bank returns --- ''normal times'' transmission.
+\item At $\tau = 0.05$: you model the \textbf{5th percentile} (left tail) of bank returns --- ''how do other variables affect the worst outcomes for banks?''
+
+\end{itemize}
+So $\beta_{ij}^{(l)}(\tau = 0.05)$ tells you how a one-unit change in $y_j$ at lag \$l\$ shifts the 5th percentile of $y_i$. This can be completely different from $\beta_{ij}^{(l)}(\tau = 0.50)$. For instance, a monetary policy tightening might have a small effect on the median of hedge fund returns but a devastating effect on the 5th percentile --- because only the worst-performing funds face margin calls and forced liquidation.
+
+
+\paragraph{The Ando, Greenwood-Nimmo \& Shin (2022) framework}
+
+Once the QVAR is estimated at quantile $\tau$, the companion matrix gives the MA($\infty$) representation, from which we compute a Generalised Forecast Error Variance Decomposition (GFEVD) --- \textbf{at each quantile separately}. This is the key contribution of Ando et al. (2022): applying the Diebold-Yilmaz (2012) connectedness framework not at the mean but across the quantile distribution.
+
+The GFEVD entry $\theta_{ij}(\tau)$ answers: ''What share of variable \$i\$'s \$h\$-step-ahead forecast error variance (at quantile $\tau$) is attributable to shocks originating in variable \$j\$?'' From this $k \times k$ matrix $\Theta(\tau)$, Ando et al. define:
+\begin{itemize}
+\item \textbf{Total connectedness} $C(\tau)$: the average off-diagonal share --- how much of each variable's risk comes from \textit{other} variables.
+\item \textbf{Directional measures}: TO (how much \$i\$ transmits), FROM (how much \$i\$ receives), NET (transmitter vs. receiver).
+
+\end{itemize}
+The critical insight: \textbf{you compute $C(\tau)$ at every quantile and compare}. If $C(0.05) \gg C(0.50)$, it means the system is dramatically more interconnected when variables are in their left tails. In normal times, shocks to one sector explain perhaps 30\% of variation in others. In stress, they might explain 70\%. This asymmetry is invisible to a standard linear VAR --- which gives you one number regardless of whether markets are calm or crashing.
+
+
+\paragraph{State-dependence and distance to constraints}
+
+An important refinement: shock propagation depends not only on structural integration (who is connected to whom) but also on \textbf{how close intermediaries are to their VaR/margin/redemption constraints} when the shock hits. A moderate monetary policy tightening in a world where hedge funds have plenty of excess margin capacity is very different from the same shock when funds are already near their VaR limits.
+
+The QVAR captures this implicitly: the coefficients $\beta_{ij}(\tau)$ vary with $\tau$ precisely because the transmission mechanism changes when the system is stressed. But we can make the state-dependence explicit with a \textbf{threshold specification}:
+
+\[Q_\tau(y_{i,t}) = \begin{cases} \alpha_1(\tau) + \beta_1(\tau) X_t & \text{if } \text{Slack}_t > \bar{s} \text{ (far from constraints)} \\ \alpha_2(\tau) + \beta_2(\tau) X_t & \text{if } \text{Slack}_t \leq \bar{s} \text{ (near constraints)} \end{cases}\]
+
+where $\text{Slack}_t$ measures the distance to binding constraints (e.g., aggregate excess margin, or the gap between actual VaR and VaR limit). The hypothesis: $\beta_2(\tau = 0.05) \gg \beta_1(\tau = 0.05)$ --- even in the left tail, amplification is much worse when constraints are nearly binding. This is a \textbf{double nonlinearity}: tail-specific \textit{and} state-dependent.
+
+This connects to the HLI from Project 1: high $\lambda_1(W_t)$ (tight network) \textbf{plus} low slack (near constraints) is the dangerous combination. Neither alone is sufficient.
+
 \textbf{Estimation details}:
 \begin{itemize}
 \item \textbf{Equation-by-equation quantile regression}: Each equation estimated separately via \texttt{statsmodels.QuantReg}. This is computationally feasible even for 7 equations because each is a standard linear quantile regression.
 \item \textbf{Lags}: \$p = 4\$ for quarterly data (one year of history). BIC-optimal at each quantile; robustness with $p \in \{1, 2, 4\}$.
 \item \textbf{Quantiles}: $\tau \in \{0.05, 0.25, 0.50, 0.75, 0.95\}$.
 \item \textbf{Residuals}: After estimation, compute residuals $\hat{u}_{i,t}(\tau) = y_{i,t} - \hat{Q}_\tau(y_{i,t}|\cdot)$ and their covariance matrix $\hat{\Sigma}(\tau)$.
-\item Implemented in \texttt{estimate\_quantile\_var()} and \texttt{estimate\_\allowbreak{}quantile\_var\_grid()} in \texttt{src/\allowbreak{}econometrics/\allowbreak{}quantile\_var.py}.
+\item Implemented in \texttt{estimate\_quantile\_var()} and \texttt{estimate\_quantile\_var\_grid()} in \texttt{src/econometrics/quantile\_var.py}.
 
 \end{itemize}
 \textbf{From the QVAR, three outputs are computed:}
@@ -1028,7 +1146,7 @@ For each of the 7 equations, the dependent variable $y_{i,t}$ is regressed on \$
 \endhead
 QIRF comparison plot & MP shock $\rightarrow$ HF return at $\tau = 0.05$ vs \$0.50\$ & Line chart (horizon on x-axis) \\
 \hline
-Connectedness table & $C(\tau)$ at each quantile & Single row: \$C(0.05)\$, \$C(0.25)\$, \$C(0.50)\$, \$C(0.75)\$, \$C(0.95)\$ \\
+Connectedness table & $C(\tau)$ at each quantile & Single row: \$C(0.05), C(0.25), C(0.50), C(0.75), C(0.95)\$ \\
 \hline
 GFEVD heatmap & $\Theta(\tau)$ matrix at $\tau = 0.05$ vs \$0.50\$ & $7 \times 7$ heatmap (two panels) \\
 \hline
@@ -1055,7 +1173,7 @@ Rolling connectedness & $C_t(0.05)$ and $C_t(0.50)$ over time & Time series (2 l
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1134,7 +1252,7 @@ where $\Phi^{-1}(\tau)$ is the standard normal quantile function (or Student-t q
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1379,21 +1497,15 @@ FSB Global Monitoring & NBFI penetration ratio by country & Annual & 2002--prese
 Project 3 traces three contagion channels, then unifies them in a quantile connectedness framework and a cascade simulation.
 
 
-\noindent\fbox{\small\strut Channel 1 (Dollar Funding)} \hfill
-\fbox{\small\strut Channel 2 (Portfolio Flows)} \hfill
-\fbox{\small\strut Channel 3 (Global Fin Cycle)}
-
-\smallskip
-\begin{center}
-$\searrow$ \hspace{3em} $\downarrow$ \hspace{3em} $\swarrow$
-
-\smallskip
-\fbox{\small\strut Module 4: Cross-Country QVAR}
-$\;\longrightarrow\;$
-\fbox{\small\strut Module 5: GFC Amplif.\ Panel}
-$\;\longrightarrow\;$
-\fbox{\small\strut Module 6: Cascade Sim}
-\end{center}
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
+\begin{verbatim}
+Channel 1 (Dollar Funding)  -+
+Channel 2 (Portfolio Flows)  -+--→  Module 4 (Cross-Country QVAR)  --→  Module 5 (GFC Amplification Panel)  --→  Module 6 (Cascade Sim)
+Channel 3 (Global Fin Cycle) -+
+\end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -1409,7 +1521,7 @@ $\;\longrightarrow\;$
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1451,7 +1563,7 @@ Local equity return & $r_{c,t}^{EQ}$ & Country \$c\$ equity index return & Bloom
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1498,7 +1610,7 @@ Estimate VAR(4) and compute GFEVD at \$h = 10\$. Then repeat with bank flows. Co
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1528,6 +1640,21 @@ International equity returns & $r_{c,t}$ & Monthly equity index returns for \$N\
 \textbf{Output}: Monthly time series $\{\text{GFC}_t\}$ --- a single global factor. Plus: loadings per country (which countries load most heavily on the GFC) and explained variance ratio.
 
 
+\paragraph{Extension: The Global Tail Cycle}
+
+The standard GFC captures co-movement at the \textbf{mean} --- it answers ''do returns move together on average?'' But the relevant question for systemic risk is: \textbf{do they crash together?} A market can look diversified in normal times but exhibit near-perfect correlation during stress. The GFC misses this.
+
+A \textbf{Global Tail Cycle (GTC)} extracts the common factor from \textbf{tail co-movements} --- correlations specifically in the left tail. There are two approaches:
+
+\textbf{(a) Tail dependence factor}: For each country pair \$(n,m)\$, compute the time-varying lower-tail dependence coefficient $\lambda_{nm,t}^L$ (using DCC-based tail dependence or exceedance correlations on a rolling window: joint probability of both being below the 5th percentile). Then extract the first principal component of the $\lambda^L$ matrix across all pairs --- this is the Global Tail Cycle.
+
+\textbf{(b) Quantile factor model} (Ando \& Bai 2020): Estimate a factor model directly at $\tau = 0.05$, extracting the first factor from a cross-country panel of equity returns at the 5th percentile. This literally is ''the common factor in left-tail outcomes.''
+
+The GTC is conceptually distinct from the standard GFC. The GFC could be high (assets correlated on average) while tail dependence is low (they don't crash together). Or the GFC could be moderate but the GTC very high (normal times look diversified, but stress is perfectly correlated). The GTC captures exactly the moment when diversification fails --- when VaR constraints bind simultaneously across jurisdictions and coordinated deleveraging amplifies the initial shock.
+
+\textbf{In Module 5}, both GFC and GTC enter the panel regression to test whether NBFI penetration amplifies \textit{average} co-movement (GFC interaction) vs. \textit{tail} co-movement (GTC interaction) differently.
+
+
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
 
 
@@ -1541,7 +1668,7 @@ International equity returns & $r_{c,t}$ & Monthly equity index returns for \$N\
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1587,7 +1714,7 @@ USD funding proxy & $\text{USD}_t$ & Change in trade-weighted USD index or 3M CI
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -1605,13 +1732,51 @@ Bank-NBFI connectedness & $\text{Conn}_{c,t}$ & Bilateral bank-NBFI exposure (fr
 \end{longtable}
 }
 
-\textbf{Model specification --- OLS panel}:
+\textbf{Model specification --- OLS panel (baseline)}:
 
 \[y_{c,t} = \alpha_c + \beta_1 \cdot \text{GFC}_t + \beta_2 \cdot \text{NBFI}_{c,t} + \beta_3 \cdot (\text{GFC}_t \times \text{NBFI}_{c,t}) + \gamma \cdot X_{c,t} + \varepsilon_{c,t}\]
 
 where $\alpha_c$ = country fixed effects.
 
 \textbf{Key parameter}: $\beta_3$. If $\beta_3 > 0$: countries with larger NBFI sectors experience \textit{stronger} transmission of the global financial cycle to local credit conditions. This is the amplification effect.
+
+
+\paragraph{NBFI Counterparty Decomposition}
+
+A single $\text{NBFI}_{c,t}$ measure (assets as \% of GDP) is too coarse --- it conflates NBFI activities with completely different systemic implications. The results differ fundamentally depending on whether NBFIs:
+\begin{itemize}
+\item Lend to domestic banks vs. borrow from domestic banks
+\item Lend to foreigners vs. borrow from foreigners
+\item Lend to or borrow from the domestic private sector
+
+\end{itemize}
+A country where NBFIs primarily borrow from domestic banks and lend to the private sector (credit intermediation model) has a different GFC transmission profile than one where NBFIs borrow from foreigners and trade derivatives with domestic banks (market intermediation model).
+
+\textbf{Extended specification} --- replace aggregate NBFI with counterparty-decomposed measures:
+
+\[y_{c,t} = \alpha_c + \beta_1 \cdot \text{GFC}_t + \sum_k \beta_{2,k} \cdot \text{NBFI}_{c,t}^{(k)} + \sum_k \beta_{3,k} \cdot (\text{GFC}_t \times \text{NBFI}_{c,t}^{(k)}) + \gamma X_{c,t} + \varepsilon_{c,t}\]
+
+where \$k\$ indexes NBFI activity types:
+\begin{itemize}
+\item $\text{NBFI}^{\text{bank-borrow}}$: NBFI borrowing from domestic banks (repo, credit lines) $\rightarrow$ captures credit risk channel
+\item $\text{NBFI}^{\text{bank-lend}}$: NBFI lending to domestic banks (deposits, bank bonds) $\rightarrow$ captures funding risk channel
+\item $\text{NBFI}^{\text{foreign-borrow}}$: NBFI cross-border borrowing $\rightarrow$ captures imported funding shock channel
+\item $\text{NBFI}^{\text{foreign-lend}}$: NBFI cross-border lending $\rightarrow$ captures outward transmission channel
+\item $\text{NBFI}^{\text{private-lend}}$: NBFI lending to private sector $\rightarrow$ captures real economy credit channel
+
+\end{itemize}
+The $\beta_{3,k}$ coefficients reveal \textit{which type} of NBFI activity amplifies GFC transmission most. The hypothesis: $\beta_{3,\text{foreign-borrow}}$ is largest (countries whose NBFIs rely on foreign funding are most vulnerable to global shocks), while $\beta_{3,\text{private-lend}}$ may actually be \textit{stabilising} (credit intermediation provides a buffer).
+
+\textbf{Data source}: ''From-whom-to-whom'' financial accounts --- Fed Z.1, ECB Financial Accounts, OECD institutional sector accounts.
+
+
+\paragraph{Global Tail Cycle extension}
+
+Replace the standard GFC with the Global Tail Cycle (from Module 3 extension):
+
+\[y_{c,t} = \alpha_c + \beta_1^{\text{GFC}} \cdot \text{GFC}_t + \beta_1^{\text{GTC}} \cdot \text{GTC}_t + \beta_3^{\text{GFC}} \cdot (\text{GFC}_t \times \text{NBFI}_{c,t}) + \beta_3^{\text{GTC}} \cdot (\text{GTC}_t \times \text{NBFI}_{c,t}) + \ldots\]
+
+If $\beta_3^{\text{GTC}} \gg \beta_3^{\text{GFC}}$: NBFI penetration amplifies \textit{tail} co-movement far more than \textit{average} co-movement --- confirming that the NBFI systemic risk channel is fundamentally a tail phenomenon.
 
 \textbf{IV specification} (addresses endogeneity of GFC --- reverse causality from local conditions to global factor):
 
@@ -1662,7 +1827,7 @@ US hedge fund sector & 20 funds, NAV \$2M total, leverage 3--15$\times$ & Calibr
 \hline
 Prime brokers & GS, JPM, MS, CS, DB & Major PB list \\
 \hline
-Market depth & \$300K & Calibrated to average equity market depth \\
+Market depth & \\$300K & Calibrated to average equity market depth \\
 \hline
 Margin requirement & 10\% of gross exposure & Industry standard \\
 \hline
@@ -1757,7 +1922,7 @@ Initial shock & -4\% across all assets & Scenario \\
 
 \subsection{Motivation}
 
-The global FX derivatives market has grown to \$75 trillion in outstanding
+The global FX derivatives market has grown to \\$75 trillion in outstanding
 notional (BIS OTC statistics, end-2024), driven primarily by NBFIs hedging
 cross-border bond investments. Combining Rey, Stavrakeva \& Tang (2024) on
 currency centrality with Nenova, Schrimpf \& Shin (2025) on FX derivatives and
@@ -1917,23 +2082,18 @@ The research programme speaks directly to ongoing regulatory debates:
 Project 4 has \textbf{three analytical layers} plus a \textbf{cascade simulation} and an \textbf{NBFI amplification panel}. The three layers test the ''offsetting forces'' hypothesis at increasing levels of complexity.
 
 
-{\small
-\noindent\fbox{\parbox{0.27\textwidth}{\centering\textbf{Layer 1}\\Quantile Regression\\[2pt]\scriptsize Offsetting forces:\\interaction breaks\\down in tails}}%
-\hfill$\longrightarrow$\hfill%
-\fbox{\parbox{0.27\textwidth}{\centering\textbf{Layer 2}\\Delta-CoVaR\\[2pt]\scriptsize Systemic risk of\\FX hedging stress\\on bond flows}}%
-\hfill$\longrightarrow$\hfill%
-\fbox{\parbox{0.27\textwidth}{\centering\textbf{Layer 3}\\Quantile Connectedness\\[2pt]\scriptsize Full chain dormant\\at median, active\\at $\tau{=}0.05$}}
-
-\medskip
-\begin{center}
-$\swarrow$ \hspace{8em} $\searrow$
-
-\smallskip
-\fbox{\parbox{0.38\textwidth}{\centering\textbf{NBFI Panel}\\[-1pt]\scriptsize Countries with higher NBFI suffer more}}%
-\hspace{1em}%
-\fbox{\parbox{0.38\textwidth}{\centering\textbf{Cascade Simulation}\\[-1pt]\scriptsize Multi-round equity $\to$ FX $\to$ CIP $\to$ bonds feedback loop}}
-\end{center}
-}
+\begin{adjustbox}{max width=\textwidth}
+\begin{minipage}{1.5\textwidth}
+\begin{verbatim}
+Layer 1 (Quantile Regression)  --→  Layer 2 (Delta-CoVaR)  --→  Layer 3 (Quantile Connectedness)  --→  NBFI Panel  --→  Cascade Sim
+         ↓                                  ↓                              ↓                              ↓                  ↓
+   Offsetting forces:              Systemic risk of           Full transmission         Countries with        Multi-round
+   interaction breaks              FX hedging stress          chain dormant at          higher NBFI           equity → FX →
+   down in tails                   on bond flows              median, active            suffer more           CIP → bonds
+                                                              at tau=0.05                                      feedback loop
+\end{verbatim}
+\end{minipage}
+\end{adjustbox}
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -1945,7 +2105,7 @@ Before detailing each layer, the key economic mechanism:
 
 
 {\small
-\begin{longtable}{@{}|p{0.18\textwidth}|p{0.36\textwidth}|p{0.36\textwidth}|@{}}
+\begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
 \hline
 \textbf{Force} & \textbf{Normal Times} & \textbf{Stress} \\
 \hline
@@ -1961,7 +2121,51 @@ CIP deviations & Small $\rightarrow$ manageable hedging cost & Blow out $\righta
 \end{longtable}
 }
 
-In normal times, an equity shock that depresses foreign currencies (making hedging costlier) is partially offset by yield curve movements that make hedged carry more attractive. In stress, \textit{all three forces move in the same direction} --- creating nonlinear amplification.
+
+\paragraph{How the Mechanism Works: A Step-by-Step Example}
+
+Consider a European pension fund holding US Treasury bonds, hedged using 3-month FX forwards (rolled quarterly). The cost of hedging is reflected in the CIP basis.
+
+\textbf{The shock}: US equity markets fall sharply (negative equity return).
+
+\textbf{Channel 1 --- Exchange rate (Rey et al. 2024)}: When US equities fall, global risk aversion spikes. The USD appreciates (safe-haven currency). EUR/USD falls. For the pension fund:
+\begin{itemize}
+\item Its FX hedge (short USD forward) suffers a mark-to-market loss
+\item Hedging \textit{future} USD exposure becomes more expensive because the CIP basis widens as dollar demand surges
+
+\end{itemize}
+\textbf{Channel 2 --- Yield curve (Nenova et al. 2025)}: The equity shock affects monetary policy expectations:
+\begin{itemize}
+\item \textit{Normal times} (moderate correction): Expectations of monetary easing $\rightarrow$ yield curve \textbf{steepens} $\rightarrow$ hedged carry (US bond yield minus hedging cost) remains \textbf{attractive} $\rightarrow$ pension fund keeps hedging and buying US bonds
+\item \textit{Stress} (severe crash): Flight to safety into long-term Treasuries $\rightarrow$ yield curve \textbf{flattens/inverts} $\rightarrow$ hedged carry \textbf{collapses} $\rightarrow$ the business case for holding hedged US bonds evaporates
+
+\end{itemize}
+\textbf{Channel 3 --- CIP deviations}: The CIP basis (FX hedging cost above covered interest parity) is normally small (5--15 bps). In stress:
+\begin{itemize}
+\item Banks that intermediate FX swaps pull back (their own VaR constraints bind)
+\item Demand for USD hedging surges (everyone hedges in the same direction)
+\item The basis \textbf{blows out} (50--100+ bps) $\rightarrow$ hedging becomes prohibitively expensive
+
+\end{itemize}
+\textbf{The key asymmetry}:
+
+\textit{Normal times} (say, a 5\% equity correction):
+\begin{itemize}
+\item USD appreciates modestly $\rightarrow$ hedging cost up slightly (\textbf{negative})
+\item Yield curve steepens $\rightarrow$ hedged carry improves (\textbf{positive, offsetting})
+\item CIP basis barely moves $\rightarrow$ manageable
+\item \textbf{Net}: forces partially cancel. Self-stabilising.
+
+\end{itemize}
+\textit{Stress} (say, a 20\% crash --- March 2020 or a severe risk-off event):
+\begin{itemize}
+\item USD appreciates violently $\rightarrow$ huge mark-to-market losses, hedging cost surges (\textbf{negative})
+\item Yield curve flattens/inverts $\rightarrow$ hedged carry disappears (\textbf{negative, reinforcing} not offsetting)
+\item CIP basis blows out $\rightarrow$ hedging prohibitive (\textbf{negative, reinforcing})
+\item \textbf{Net}: ALL three forces push in the same direction. Pension fund stops rolling hedges, sells US bonds. Every hedged foreign investor faces the same forces simultaneously $\rightarrow$ \textbf{coordinated sell-off} in US bonds $\rightarrow$ feeds back to equity declines, further USD appreciation, further CIP blowout. This is the positive feedback loop that only activates in the tails.
+
+\end{itemize}
+The quantile regression test captures exactly this: the interaction term $\beta_4(\tau) \cdot (\text{Equity}_t \times \text{VIX}_t)$ should be near zero at $\tau = 0.50$ (offsetting forces cancel at the median) but large at $\tau = 0.05$ (all forces reinforce in the tail).
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -1977,7 +2181,7 @@ In normal times, an equity shock that depresses foreign currencies (making hedgi
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -2039,7 +2243,7 @@ Interaction & $\text{Equity}_t \times \text{VIX}_t$ & Tests whether equity impac
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -2097,7 +2301,7 @@ A large negative $\Delta$-CoVaR means FX hedging stress \textit{significantly wo
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -2156,7 +2360,7 @@ Bond flows & $F_{c,t}^{Bond}$ & Same as Layer 2 & EPFR & Monthly & Country \\
 
 
 {\small
-\begin{longtable}{@{}|p{0.08\textwidth}|p{0.06\textwidth}|p{0.20\textwidth}|p{0.17\textwidth}|p{0.12\textwidth}|p{0.10\textwidth}|@{}}
+\begin{longtable}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}
 \hline
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
@@ -2180,11 +2384,13 @@ Controls & $X_{c,t}$ & VIX, local equity return, yield slope differential & Vari
 
 \textbf{Key parameter}: $\beta_3 < 0$. Countries with higher NBFI penetration experience \textit{larger} bond flow reversals when CIP basis widens (hedging costs spike).
 
+\textbf{NBFI counterparty decomposition}: As in Project 3, the aggregate $\text{NBFI}_{c,t}$ should be decomposed by counterparty type. In this context, the most relevant decomposition is by \textbf{FX hedging activity}: countries where NBFIs rely heavily on cross-border FX-hedged bond holdings (foreign-borrowing model) should show the strongest amplification, while countries where NBFIs are primarily domestic credit intermediaries should be less affected by the CIP channel. The from-whom-to-whom financial accounts provide the basis for this decomposition.
+
 \textbf{IV specification}: CIP basis instrumented with central bank swap line announcements (exogenous supply-side shocks to FX funding).
 
 \textbf{Estimation details}:
 \begin{itemize}
-\item \texttt{nbfi\_fx\_hedging\_panel\_regression()} and \texttt{iv\_fx\_hedging\_\allowbreak{}regression()} in \texttt{src/analysis/\allowbreak{}fx\_hedging\_contagion.py}.
+\item \texttt{nbfi\_fx\_hedging\_panel\_regression()} and \texttt{iv\_fx\_hedging\_regression()} in \texttt{src/analysis/fx\_hedging\_contagion.py}.
 \item Country FE, clustered standard errors.
 
 \end{itemize}
@@ -2231,7 +2437,7 @@ Max rounds & --- & 20 & Until convergence \\
 \item \textbf{Round 1}: Equity falls -5\%.
 \item \textbf{FX}: USD appreciates by $0.30 \times 5\% = 1.5\%$.
 \item \textbf{CIP}: Basis widens by $5 \times 1.5 = 7.5$ bps.
-\item \textbf{Bond flows}: Reverse by $(-2.0) \times 7.5/10 = -\$1.5$B.
+\item \textbf{Bond flows}: Reverse by $(-2.0) \times 7.5/10 = -$\$1.5B.
 \item \textbf{Feedback}: Equity drops additional $0.15 \times 1.5/100 = 0.225\%$.
 \item \textbf{VIX}: Spikes proportional to cumulative equity loss.
 \item \textbf{Dampening}: Each subsequent round is 70\% of the previous.
@@ -2330,14 +2536,62 @@ DCC-GARCH & Time-varying correlations across sectors & P2 \\
 \hline
 Diebold-Yilmaz GFEVD & Directional connectedness (mean) & P2, P3 \\
 \hline
-Network / spectral & Centrality, HLI, contagion matrices & P1, P3 \\
+Network / spectral & Centrality, HLI, contagion matrices (credit + funding) & P1, P3 \\
 \hline
 Agent-based simulation & Cascade / fire-sale propagation & P1, P3, P4 \\
 \hline
 Panel FE + IV (2SLS) & Causal identification with MP shocks & P3, P4 \\
 \hline
+Quantile factor model & Global Tail Cycle extraction (Ando \& Bai 2020) & P3 \\
+\hline
+From-whom-to-whom accounts & NBFI counterparty decomposition & P1, P3, P4 \\
+\hline
 \end{longtable}
 }
+
+
+\subsubsection{Cross-Cutting Analytical Themes}
+
+Three themes recur across all four projects and deserve explicit recognition:
+
+
+\paragraph{1. State-Dependence and Distance to Constraints}
+
+The propagation of any shock through the NBFI system depends on two things simultaneously:
+\begin{itemize}
+\item \textbf{Structural integration}: How embedded is NBFI activity in the financial system (size, leverage, interconnectedness)? This is relatively slow-moving.
+\item \textbf{Distance to constraints}: How close are intermediaries to their VaR/margin/redemption constraints at the moment the shock hits? This is fast-moving and state-dependent.
+
+\end{itemize}
+A moderate monetary policy tightening when hedge funds have ample excess margin is very different from the same shock when funds are already near VaR limits. Same structural integration, dramatically different propagation. The QVAR captures this implicitly ($\beta_{ij}(\tau)$ varies with $\tau$), but it can be made explicit via threshold specifications or by interacting NBFI variables with distance-to-constraint measures.
+
+The dangerous combination is: high $\lambda_1(W_t)$ (tight network) \textbf{plus} low slack (near constraints). Neither alone is sufficient for systemic crisis.
+
+
+\paragraph{2. NBFI Counterparty Decomposition}
+
+Aggregate ''NBFI penetration'' (assets / GDP) conflates activities with fundamentally different systemic implications. The key decomposition is by counterparty:
+
+
+{\small
+\begin{longtable}{|p{0.22\textwidth}|p{0.33\textwidth}|p{0.33\textwidth}|}
+\hline
+\textbf{Domestic banks} & \textbf{Foreign counterparties} & \textbf{Domestic private sector} \\
+\hline
+\endhead
+\textbf{NBFI lends to} & Funding source for banks & Transmits shocks outward \\
+\hline
+\textbf{NBFI borrows from} & Bank credit risk exposure & Imports foreign funding shocks \\
+\hline
+\end{longtable}
+}
+
+This decomposition matters for every panel regression in the programme. Data: from-whom-to-whom financial accounts (Fed Z.1, ECB, OECD).
+
+
+\paragraph{3. Global Tail Cycle}
+
+The standard Global Financial Cycle (Rey 2013) captures co-movement at the mean. A \textbf{Global Tail Cycle} captures co-movement in the left tail --- the common factor in crash risk. These are conceptually distinct objects: markets can look diversified on average but crash together. The GTC is the risk factor that sets in motion coordinated VaR breaches and feedback loops across jurisdictions. Extracted either from tail dependence matrices (rolling exceedance correlations) or quantile factor models (Ando \& Bai 2020).
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -2374,5 +2628,22 @@ nonlinear. Standard mean-based methods miss the tail amplification, asymmetric \
 contagion, and crisis-activated transmission that quantile methods reveal. \\
 \end{quote}
 
+\begin{itemize}
+\item \textbf{P3 $\leftrightarrow$ Global Tail Cycle}: P3's GFC factor extraction is extended to a
+Global \textit{Tail} Cycle --- a common factor in crash risk rather than average
+co-movement. NBFI penetration amplifies GTC transmission more than GFC
+transmission, confirming that NBFI systemic risk is fundamentally a tail
+phenomenon.
+
+\item \textbf{Cross-cutting: NBFI counterparty decomposition}: Across P1, P3, and P4,
+aggregate NBFI measures are decomposed by counterparty type (bank-lending,
+bank-borrowing, foreign, private sector). This reveals which \textit{type} of NBFI
+activity drives amplification --- not just how \textit{much} NBFI there is.
+
+\item \textbf{Cross-cutting: State-dependence}: Across P1--P4, shock amplification
+depends not only on structural NBFI integration but on distance to
+constraints. The HLI (P1) $\times$ constraint slack interaction captures
+the joint condition for systemic crisis.
+\end{itemize}
 
 \end{document}
