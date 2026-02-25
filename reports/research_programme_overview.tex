@@ -1523,7 +1523,19 @@ Channel 3 (Global Fin Cycle) -+
 
 \subsubsection{Module 1: Dollar Funding Channel}
 
-\textbf{Purpose}: Test whether FX swap basis (dollar funding stress) transmits cross-border via NBFI deleveraging, and whether this transmission is nonlinear (stronger in the tails).
+\textbf{Purpose}: Test whether dollar funding stress (measured by the CIP basis) is amplified in countries whose financial sectors have larger structural dollar hedging needs, and whether this amplification is nonlinear (stronger in the tails).
+
+
+\paragraph{Economic Logic}
+
+The CIP basis is determined by the balance between supply and demand for dollar hedging in the FX swap market. What matters is not generic ''NBFI size'' but specifically \textbf{how much of country \$c\$'s financial sector relies on FX-hedged dollar assets or dollar funding via swaps}:
+
+\begin{itemize}
+\item \textbf{Pension funds and insurance companies} in countries like Japan, the Netherlands, and Korea hold large portfolios of US Treasuries and corporate bonds, hedged via 3-month FX forwards that must be rolled quarterly. This creates structural, recurring demand for dollar hedging.
+\item \textbf{NBFI dollar borrowing}: Institutions that use FX swaps as synthetic dollar funding (borrow dollars, lend local currency) are directly exposed when the swap market seizes up.
+
+\end{itemize}
+When stress hits (VIX spikes, equity markets fall), these institutions face margin calls on their FX forwards and compete for scarce dollar liquidity. Countries with larger structural dollar hedging demand see their CIP basis blow out more --- not because NBFIs are ''big'' but because their hedging activity creates concentrated demand that overwhelms dealer capacity during stress.
 
 \textbf{Unit of observation}: Currency pair \$c\$ $\times$ month \$t\$.
 
@@ -1538,7 +1550,7 @@ Channel 3 (Global Fin Cycle) -+
 \endhead
 CIP basis & $\text{CIP}_{c,t}$ & Cross-currency basis swap spread for currency \$c\$ vs USD (3-month tenor). Negative = dollar funding premium & Bloomberg & Daily $\rightarrow$ Monthly avg & Currency pair \\
 \hline
-NBFI leverage & $\text{NBFI}_{c,t}$ & NBFI assets as \% of GDP in country \$c\$ & FSB Global Monitoring Report & Annual (interpolated to quarterly) & Country \\
+FX hedge demand & $\text{FXHedge}_{c,t}$ & Structural dollar hedging need of country \$c\$'s financial sector (see below) & BIS Triennial Survey; IMF CPIS; national sources & Semi-annual / Annual & Country \\
 \hline
 VIX & $\text{VIX}_t$ & CBOE Volatility Index & FRED & Daily $\rightarrow$ Monthly avg & Global \\
 \hline
@@ -1549,15 +1561,22 @@ Local equity return & $r_{c,t}^{EQ}$ & Country \$c\$ equity index return & Bloom
 \end{longtable}
 }
 
+\textbf{Measuring $\text{FXHedge}_{c,t}$} --- three alternatives (from most to least precise):
+\begin{enumerate}
+\item \textbf{Outstanding FX swap/forward positions} of country \$c\$'s non-bank financial sector (from BIS Triennial Survey --- available for major currencies, semi-annual)
+\item \textbf{Cross-border bond holdings that need hedging}: country \$c\$'s institutional investors' holdings of foreign-currency bonds (from IMF Coordinated Portfolio Investment Survey), scaled by estimated hedge ratios
+\item \textbf{Fallback}: NBFI foreign assets as \% of GDP from FSB Global Monitoring Report (coarser but broader country coverage)
+
+\end{enumerate}
 \textbf{Model specification} --- Quantile regression:
 
-\[Q_\tau(\text{CIP}_{c,t}) = \alpha_c + \beta_1(\tau) \cdot \text{VIX}_t + \beta_2(\tau) \cdot r_{c,t}^{EQ} + \beta_3(\tau) \cdot \text{NBFI}_{c,t} + \beta_4(\tau) \cdot (\text{VIX}_t \times \text{NBFI}_{c,t}) + \varepsilon_{c,t}\]
+\[Q_\tau(\text{CIP}_{c,t}) = \alpha_c + \beta_1(\tau) \cdot \text{VIX}_t + \beta_2(\tau) \cdot r_{c,t}^{EQ} + \beta_3(\tau) \cdot \text{FXHedge}_{c,t} + \beta_4(\tau) \cdot (\text{VIX}_t \times \text{FXHedge}_{c,t}) + \varepsilon_{c,t}\]
 
-\textbf{Key test}: $\beta_4(\tau = 0.05) \neq 0$ but $\beta_4(\tau = 0.50) \approx 0$. Countries with higher NBFI penetration suffer \textit{larger} CIP blowouts during stress --- but not during normal times.
+\textbf{Key test}: $\beta_4(\tau = 0.05) \neq 0$ but $\beta_4(\tau = 0.50) \approx 0$. Countries with larger structural dollar hedging needs suffer larger CIP blowouts during stress --- but not during normal times. The mechanism: stress triggers a rush to roll hedges, demand overwhelms dealer capacity, and the basis blows out in proportion to pre-existing hedging demand.
 
 \textbf{Estimation}: \texttt{statsmodels.QuantReg} at $\tau \in \{0.05, 0.25, 0.50, 0.75, 0.95\}$, with country fixed effects. Standard errors clustered by country.
 
-\textbf{Output}: Coefficient table across quantiles; scatter plot of CIP basis vs. VIX for high- vs. low-NBFI countries.
+\textbf{Output}: Coefficient table across quantiles; scatter plot of CIP basis vs. VIX for high- vs. low-FXHedge countries.
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
