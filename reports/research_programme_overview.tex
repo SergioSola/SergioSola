@@ -317,19 +317,29 @@ The row-normalisation (dividing by $\sum_k$) ensures each row sums to 1, giving 
 
 \paragraph{Two Directions of Risk: Credit vs. Funding}
 
-The matrix $W^{\text{credit}}$ captures only one direction --- \textbf{credit/fire-sale risk} (bank's loss from NBFI distress). There is a second, equally important direction --- \textbf{funding risk} (NBFI's loss from bank funding withdrawal):
+The matrix $W_t^{\text{credit}}$ (dimension $n_B \times n_N$) captures only one direction --- \textbf{credit/fire-sale risk} (bank's loss from NBFI distress). There is a second, equally important direction --- \textbf{funding risk} (NBFI's loss from bank funding withdrawal). The funding matrix $W_t^{\text{funding}}$ has dimension $n_N \times n_B$, with \$(j,i)\$-th entry:
 
 \[W_{ji,t}^{\text{funding}} = \frac{\text{Exp}_{ji,t} \times \text{Lev}_{i,t}}{\sum_k \text{Exp}_{jk,t} \times \text{Lev}_{k,t}}\]
 
 This captures: NBFI sub-sector \$j\$ depends on bank \$i\$ for repo funding or credit lines. If bank \$i\$ is highly leveraged and its own VaR constraint binds, it pulls back funding (raises haircuts, calls margin, refuses to roll repo). The severity depends on how leveraged bank \$i\$ is --- more leveraged banks are more likely to pull funding when stressed.
 
-The full picture requires \textbf{both matrices}: $W^{\text{credit}}$ (bank exposed to NBFI fire sale) and $W^{\text{funding}}$ (NBFI exposed to bank funding withdrawal). The combined system is a single non-symmetric matrix where:
+
+\paragraph{The Combined System Matrix}
+
+For the spectral analysis (Module 3), we need a \textbf{single} matrix that captures the feedback loop between credit and funding risk: bank pulls funding $\rightarrow$ NBFI fire-sells $\rightarrow$ bank takes credit loss $\rightarrow$ bank pulls more funding. Two separate matrices would miss this circularity.
+
+We combine both into a single $(n_B + n_N) \times (n_B + n_N)$ block matrix:
+
+\[\mathcal{W}_t = \begin{pmatrix} 0 & W_t^{\text{credit}} \\ W_t^{\text{funding}} & 0 \end{pmatrix}\]
+
+where:
 \begin{itemize}
-\item Entry \$(i,j)\$: bank \$i\$'s credit risk from NBFI \$j\$ (weighted by NBFI leverage)
-\item Entry \$(j,i)\$: NBFI \$j\$'s funding risk from bank \$i\$ (weighted by bank leverage)
+\item The upper-right block $W_t^{\text{credit}}$ ($n_B \times n_N$): bank \$i\$'s credit risk exposure to NBFI \$j\$
+\item The lower-left block $W_t^{\text{funding}}$ ($n_N \times n_B$): NBFI \$j\$'s funding risk from bank \$i\$
+\item The diagonal blocks are zero (within-bank and within-NBFI linkages are not modelled here)
 
 \end{itemize}
-For the HLI spectral analysis (Module 3), we use the combined matrix. The spectral radius of the combined system captures the \textit{total amplification potential} from both credit and funding channels operating simultaneously.
+The spectral radius $\lambda_1(\mathcal{W}_t)$ of this combined matrix captures the \textbf{total amplification potential} from both channels feeding into each other. A high $\lambda_1$ means the credit-funding feedback loop is tightly wound --- NBFI fire sales hurt banks, which pull funding, which triggers more fire sales.
 
 
 \paragraph{NBFI Counterparty Decomposition}
@@ -370,14 +380,14 @@ Each cell creates a different contagion channel with different speed, amplificat
 \paragraph{Output}
 
 \begin{itemize}
-\item A time series of adjacency matrices $W_t^{\text{credit}}$ and $W_t^{\text{funding}}$ (one pair per quarter).
-\item Combined (non-symmetric) matrix for spectral analysis.
+\item A time series of adjacency matrices $W_t^{\text{credit}}$ ($n_B \times n_N$) and $W_t^{\text{funding}}$ ($n_N \times n_B$), one pair per quarter.
+\item Combined system matrix $\mathcal{W}_t$ ($(n_B + n_N) \times (n_B + n_N)$ block matrix) for spectral analysis.
 \item Centrality rankings for each node at each date.
 \item Network summary statistics over time: density, total exposure, HHI (concentration), reciprocity.
 \item Decomposition of cross-border vs. domestic exposure shares over time.
 
 \end{itemize}
-\textbf{$\rightarrow$ Link to Module 3}: The combined adjacency matrix $W_t$ is the direct input to the spectral analysis. The HLI is the largest eigenvalue of $W_t$.
+\textbf{$\rightarrow$ Link to Module 3}: The combined system matrix $\mathcal{W}_t$ is the direct input to the spectral analysis. The HLI is the largest eigenvalue of $\mathcal{W}_t$.
 
 
 \bigskip\noindent\rule{\textwidth}{0.4pt}\bigskip
@@ -398,24 +408,24 @@ Each cell creates a different contagion channel with different speed, amplificat
 \textbf{Variable} & \textbf{Symbol} & \textbf{Definition} & \textbf{Source} & \textbf{Frequency} & \textbf{Level} \\
 \hline
 \endhead
-Adjacency matrix & $W_t$ & Leverage-weighted exposure matrix from Module 2 & Module 2 output & Quarterly & System-level \\
+Combined adjacency matrix & $\mathcal{W}_t$ & Combined credit + funding block matrix from Module 2 & Module 2 output & Quarterly & System-level \\
 \hline
 \end{longtable}
 }
 
 \textbf{Model specification}:
 
-\[\text{HLI}_t = \lambda_1(W_t)\]
+\[\text{HLI}_t = \lambda_1(\mathcal{W}_t)\]
 
-where $\lambda_1(W_t)$ is the \textbf{largest eigenvalue} (spectral radius) of the normalised exposure matrix $W_t$.
+where $\lambda_1(\mathcal{W}_t)$ is the \textbf{largest eigenvalue} (spectral radius) of the combined system matrix $\mathcal{W}_t$.
 
 \textbf{Economic intuition --- network amplification, not PCA} (Acemoglu, Ozdaglar \& Tahbaz-Salehi 2015): The spectral radius is \textit{not} a statistical summary like PCA's first component --- it is a \textbf{structural measure of the network's amplification capacity}. The logic is a cascade argument:
 
-Consider a shock $\varepsilon$ hitting one node. Through the network, losses propagate: node \$j\$'s distress hits bank \$i\$ with weight $W_{ij}$, then \$i\$'s distress hits others with weight $W_{ki}$, and so on. After \$n\$ rounds, total losses are:
+Consider a shock $\varepsilon$ hitting one node. Through the network, losses propagate: node $j$'s distress hits bank $i$ with weight $\mathcal{W}_{ij}$, then $i$'s distress hits others with weight $\mathcal{W}_{ki}$, and so on. After $n$ rounds, total losses are:
 
-\[\text{Total loss} \propto \varepsilon + W\varepsilon + W^2\varepsilon + W^3\varepsilon + \ldots = (I - W)^{-1}\varepsilon\]
+\[\text{Total loss} \propto \varepsilon + \mathcal{W}\varepsilon + \mathcal{W}^2\varepsilon + \mathcal{W}^3\varepsilon + \ldots = (I - \mathcal{W})^{-1}\varepsilon\]
 
-This geometric series converges if and only if $\lambda_1(W) < 1$. The \textbf{rate of amplification} is governed by $\lambda_1$:
+This geometric series converges if and only if $\lambda_1(\mathcal{W}) < 1$. The \textbf{rate of amplification} is governed by $\lambda_1$:
 \begin{itemize}
 \item $\lambda_1$ close to 0: shocks dissipate quickly. The network is ''loose.''
 \item $\lambda_1$ close to 1: shocks amplify through many rounds before dying out. The network is ''tightly wound'' --- approaching the instability threshold.
@@ -425,8 +435,8 @@ The \textbf{eigenvector} associated with $\lambda_1$ also matters --- it identif
 
 \textbf{Estimation details}:
 \begin{itemize}
-\item Computed via \texttt{numpy.linalg.eigvals(W\_t)} at each quarter on the combined (credit + funding) matrix.
-\item No estimation --- this is a deterministic transformation of $W_t$.
+\item Computed via \texttt{numpy.linalg.eigvals} on $\mathcal{W}_t$ at each quarter.
+\item No estimation --- this is a deterministic transformation of $\mathcal{W}_t$.
 \item Robustness: also compute the second eigenvalue $\lambda_2$ (captures secondary amplification channels) and the spectral gap $\lambda_1 - \lambda_2$ (captures how ''dominant'' the main amplification channel is).
 \item Separate spectral analysis on $W^{\text{credit}}$ vs. $W^{\text{funding}}$ to identify which direction of risk dominates amplification.
 
