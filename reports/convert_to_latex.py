@@ -19,15 +19,20 @@ def escape_text(s: str) -> str:
 
     # Protect display math $$...$$
     s = re.sub(r'\$\$.*?\$\$', save, s, flags=re.DOTALL)
-    # Protect inline math $...$ (must contain a backslash or common math chars to be real math)
-    s = re.sub(r'\$(?=[^$]*[\\^_{}])[^$]+?\$', save, s)
+    # Protect inline math $...$: use negative lookbehind so \$ (currency) is
+    # NOT treated as a math delimiter. Inside math, \$ is allowed via the
+    # |\\\$ alternative; the closing $ must also not be preceded by \.
+    s = re.sub(r'(?<!\\)\$(?:[^$]|\\\$)+?(?<!\\)\$', save, s)
+    # Protect markdown-escaped dollar signs (\$100M etc.) — these are currency,
+    # and should become \$ in LaTeX (which is what they already are)
+    s = re.sub(r'\\\$', save, s)
 
     # Escape special chars in order that avoids double-escaping
     # 1. First handle &, %, # which have no interaction issues
     s = s.replace('&', r'\&')
     s = s.replace('%', r'\%')
     s = s.replace('#', r'\#')
-    # 2. Escape literal $ (currency signs remaining after math protection)
+    # 2. Escape literal $ (any remaining bare dollar signs not caught above)
     s = s.replace('$', r'\$')
     # 3. Underscores
     s = s.replace('_', r'\_')
