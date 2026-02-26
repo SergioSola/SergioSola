@@ -5,7 +5,9 @@ Implements:
   1. Cholesky decomposition of the co-exceedance matrix (Schüler 2020,
      Beutel et al. 2025) — the baseline approach in the JIMF paper
   2. Sign restrictions via QR decomposition (Rubio-Ramírez, Waggoner & Zha
-     2010; Arias, Rubio-Ramírez & Waggoner 2018)
+     2010)
+  3. Zero and sign restrictions via the column-by-column null-space algorithm
+     (Arias, Rubio-Ramírez & Waggoner 2018, Econometrica)
 
 The co-exceedance matrix Omega_tau replaces the standard covariance matrix
 for orthogonalization in quantile VARs. It captures the co-variation of
@@ -374,6 +376,274 @@ def _compute_irfs_for_rotation(
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+# 3. Zero and sign restrictions (Arias, Rubio-Ramírez & Waggoner 2018)
+# ═══════════════════════════════════════════════════════════════════════════
+
+def _build_zero_restriction_matrices(
+    zero_restrictions: dict,
+    k: int,
+    P_tau: np.ndarray,
+    companion: np.ndarray,
+) -> dict[int, np.ndarray]:
+    """
+    Build the zero-restriction matrix Z_j for each shock j.
+
+    For shock j, Z_j collects rows such that Z_j @ (P_tau @ q_j) = 0,
+    meaning the IRF of certain variables to shock j is exactly zero.
+
+    Parameters
+    ----------
+    zero_restrictions : Dict with keys (shock_idx, response_var_idx, horizon)
+        and values 0 (for zero restriction).
+    k : Number of variables.
+    P_tau : (k, k) Cholesky factor.
+    companion : (kp, kp) companion matrix.
+
+    Returns
+    -------
+    Dict mapping shock_idx -> (n_zeros_j, k) restriction matrix.
+    """
+    dim = companion.shape[0]
+
+    # Group zero restrictions by shock
+    restrictions_by_shock: dict[int, list] = {}
+    for (shock_idx, var_idx, h), val in zero_restrictions.items():
+        if shock_idx not in restrictions_by_shock:
+            restrictions_by_shock[shock_idx] = []
+        restrictions_by_shock[shock_idx].append((var_idx, h))
+
+    Z_matrices = {}
+    for shock_idx, var_horizon_pairs in restrictions_by_shock.items():
+        rows = []
+        for var_idx, h in var_horizon_pairs:
+            # e_i' @ Phi_h @ P_tau @ q_j = 0
+            # => (e_i' @ Phi_h @ P_tau) @ q_j = 0
+            # This row constrains q_j
+            e_i = np.zeros(k)
+            e_i[var_idx] = 1.0
+
+            if h == 0:
+                Phi_h = np.eye(k)
+            else:
+                power = np.linalg.matrix_power(companion, h)
+                Phi_h = power[:k, :k]
+
+            row = e_i @ Phi_h @ P_tau  # (k,) — a row constraining q_j
+            rows.append(row)
+
+        Z_matrices[shock_idx] = np.array(rows)  # (n_zeros_j, k)
+
+    return Z_matrices
+
+
+def draw_orthogonal_column_in_nullspace(
+    Z_j: Optional[np.ndarray],
+    prev_columns: list[np.ndarray],
+    k: int,
+    rng: np.random.Generator,
+) -> Optional[np.ndarray]:
+    """
+    Draw a random unit vector in the intersection of:
+      (a) the null space of Z_j (zero restrictions for shock j)
+      (b) the orthogonal complement of previously drawn columns
+
+    This is the core of the Arias et al. (2018) column-by-column algorithm.
+
+    Parameters
+    ----------
+    Z_j : (n_zeros_j, k) zero-restriction matrix for shock j, or None.
+    prev_columns : List of previously drawn (k,) column vectors.
+    k : Dimension.
+    rng : Random generator.
+
+    Returns
+    -------
+    (k,) unit vector, or None if the subspace is empty.
+    """
+    # Start with the full space
+    constraints = []
+
+    # Add zero-restriction rows
+    if Z_j is not None and Z_j.shape[0] > 0:
+        constraints.append(Z_j)
+
+    # Add orthogonality constraints from previous columns
+    if prev_columns:
+        constraints.append(np.array(prev_columns))
+
+    if constraints:
+        C = np.vstack(constraints)  # (m, k) where m = n_zeros + n_prev
+    else:
+        C = np.zeros((0, k))
+
+    if C.shape[0] >= k:
+        # No degrees of freedom left — subspace is trivial or empty
+        return None
+
+    if C.shape[0] == 0:
+        # No constraints: draw uniformly on the unit sphere
+        x = rng.standard_normal(k)
+        return x / np.linalg.norm(x)
+
+    # Find the null space of C: the subspace where q_j must lie
+    # C @ q_j = 0  =>  q_j in null(C)
+    U, S, Vt = np.linalg.svd(C, full_matrices=True)
+    # Null space = rows of Vt corresponding to zero (or near-zero) singular values
+    rank = np.sum(S > 1e-10)
+    null_basis = Vt[rank:].T  # (k, d) where d = k - rank
+
+    d = null_basis.shape[1]
+    if d == 0:
+        return None
+
+    # Draw uniformly on the d-dimensional unit sphere within the null space
+    x = rng.standard_normal(d)
+    x = x / np.linalg.norm(x)
+
+    # Map back to k-dimensional space
+    q_j = null_basis @ x
+    return q_j
+
+
+def draw_orthogonal_matrix_with_zeros(
+    k: int,
+    zero_restriction_matrices: dict[int, np.ndarray],
+    rng: np.random.Generator,
+) -> Optional[np.ndarray]:
+    """
+    Draw an orthogonal matrix Q column by column, respecting zero restrictions.
+
+    Algorithm (Arias, Rubio-Ramírez & Waggoner 2018, Algorithm 2):
+    For j = 1, ..., k:
+      1. Let N_j = null(Z_j) intersected with orth(q_1, ..., q_{j-1})
+      2. Draw q_j uniformly on the unit sphere within N_j
+
+    Parameters
+    ----------
+    k : Dimension.
+    zero_restriction_matrices : Dict mapping shock_idx -> (n_zeros_j, k) matrix.
+    rng : Random generator.
+
+    Returns
+    -------
+    (k, k) orthogonal matrix Q, or None if construction fails.
+    """
+    Q = np.zeros((k, k))
+    prev_columns = []
+
+    for j in range(k):
+        Z_j = zero_restriction_matrices.get(j, None)
+        q_j = draw_orthogonal_column_in_nullspace(Z_j, prev_columns, k, rng)
+
+        if q_j is None:
+            return None  # Failed: subspace empty
+
+        Q[:, j] = q_j
+        prev_columns.append(q_j)
+
+    return Q
+
+
+def zero_sign_restriction_identification(
+    residuals: np.ndarray,
+    tau: np.ndarray,
+    zero_restrictions: dict,
+    sign_restrictions: dict,
+    companion: np.ndarray,
+    n_rotations: int = 10000,
+    max_horizon_check: int = 0,
+    seed: int = 42,
+) -> dict:
+    """
+    Identify structural shocks using zero AND sign restrictions.
+
+    Algorithm (Arias, Rubio-Ramírez & Waggoner 2018):
+    1. Compute Cholesky P_tau of co-exceedance matrix
+    2. Build zero-restriction matrices Z_j for each shock
+    3. Draw Q column-by-column in the null space of Z_j
+    4. Candidate impact: A0 = P_tau @ Q
+    5. Check sign restrictions on IRFs
+    6. Accept if all satisfied
+
+    Parameters
+    ----------
+    residuals : (T, k) reduced-form residuals.
+    tau : (k,) quantile levels.
+    zero_restrictions : Dict with keys (shock_idx, var_idx, horizon), values 0.
+        Specifies that IRF[h, var_idx, shock_idx] = 0 exactly.
+    sign_restrictions : Dict with keys (shock_idx, var_idx, horizon), values +1/-1.
+    companion : (kp, kp) companion matrix.
+    n_rotations : Number of draws to attempt.
+    max_horizon_check : Max horizon for checking sign restrictions.
+    seed : Random seed.
+
+    Returns
+    -------
+    Dict with accepted rotations, IRFs, and acceptance diagnostics.
+    """
+    rng = np.random.default_rng(seed)
+    k = residuals.shape[1]
+
+    chol_result = cholesky_identification(residuals, tau)
+    P_tau = chol_result["P_tau"]
+
+    # Build zero-restriction matrices
+    Z_matrices = _build_zero_restriction_matrices(
+        zero_restrictions, k, P_tau, companion)
+
+    max_h = max(
+        (h for (_, _, h) in {**zero_restrictions, **sign_restrictions}.keys()),
+        default=0,
+    )
+    max_h = max(max_h, max_horizon_check)
+
+    accepted_rotations = []
+    accepted_irfs = []
+    n_failed_construction = 0
+
+    for _ in range(n_rotations):
+        Q = draw_orthogonal_matrix_with_zeros(k, Z_matrices, rng)
+
+        if Q is None:
+            n_failed_construction += 1
+            continue
+
+        A0 = P_tau @ Q
+
+        irfs = _compute_irfs_for_rotation(A0, companion, k, max_h)
+
+        # Verify zero restrictions hold (they should by construction, but check)
+        zeros_ok = True
+        for (shock_idx, var_idx, h), val in zero_restrictions.items():
+            if h < irfs.shape[0] and abs(irfs[h, var_idx, shock_idx]) > 1e-8:
+                zeros_ok = False
+                break
+
+        if not zeros_ok:
+            continue
+
+        # Check sign restrictions
+        if check_sign_restrictions(irfs, sign_restrictions, max_h):
+            accepted_rotations.append(Q)
+            accepted_irfs.append(irfs)
+
+    n_accepted = len(accepted_rotations)
+
+    return {
+        "P_tau": P_tau,
+        "Omega_tau": chol_result["Omega_tau"],
+        "n_accepted": n_accepted,
+        "n_tried": n_rotations,
+        "n_failed_construction": n_failed_construction,
+        "acceptance_rate": n_accepted / n_rotations if n_rotations > 0 else 0,
+        "accepted_rotations": accepted_rotations,
+        "accepted_irfs": accepted_irfs,
+        "zero_restrictions": zero_restrictions,
+        "sign_restrictions": sign_restrictions,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 # Combined identification interface
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -383,6 +653,7 @@ def identify_shocks(
     method: str = "cholesky",
     companion: Optional[np.ndarray] = None,
     sign_restrictions: Optional[dict] = None,
+    zero_restrictions: Optional[dict] = None,
     **kwargs,
 ) -> dict:
     """
@@ -392,9 +663,10 @@ def identify_shocks(
     ----------
     residuals : (T, k) reduced-form residuals.
     tau : (k,) quantile levels.
-    method : "cholesky" or "sign_restrictions".
-    companion : Required for sign restrictions.
-    sign_restrictions : Required for sign restrictions method.
+    method : "cholesky", "sign_restrictions", or "zero_sign_restrictions".
+    companion : Required for sign/zero restrictions.
+    sign_restrictions : For sign or zero+sign restriction methods.
+    zero_restrictions : For zero+sign restriction method.
     **kwargs : Additional arguments passed to the specific method.
 
     Returns
@@ -411,6 +683,17 @@ def identify_shocks(
             raise ValueError("sign_restrictions dict required")
         return sign_restriction_identification(
             residuals, tau, sign_restrictions, companion, **kwargs)
+
+    elif method == "zero_sign_restrictions":
+        if companion is None:
+            raise ValueError("companion matrix required")
+        if zero_restrictions is None:
+            raise ValueError("zero_restrictions dict required")
+        if sign_restrictions is None:
+            sign_restrictions = {}
+        return zero_sign_restriction_identification(
+            residuals, tau, zero_restrictions, sign_restrictions,
+            companion, **kwargs)
 
     else:
         raise ValueError(f"Unknown identification method: {method}")

@@ -27,7 +27,10 @@ from .identification import (
     cholesky_identification,
     compute_shock_vector,
     sign_restriction_identification,
+    zero_sign_restriction_identification,
     draw_orthogonal_matrix,
+    draw_orthogonal_matrix_with_zeros,
+    _build_zero_restriction_matrices,
     check_sign_restrictions,
     _compute_irfs_for_rotation,
 )
@@ -329,6 +332,138 @@ def compute_bayesian_qirfs_sign_restrictions(
 
     for shock_idx in range(k):
         irfs_this_shock = all_accepted[:, :, :, shock_idx]  # (n_acc, H+1, k)
+        median_irfs = np.median(irfs_this_shock, axis=0)
+        bands = {}
+        for q in credible_levels:
+            bands[q] = np.percentile(irfs_this_shock, q * 100, axis=0)
+
+        result["shocks"][shock_idx] = {
+            "median": median_irfs,
+            "bands": bands,
+            "all_irfs": irfs_this_shock,
+        }
+
+    return result
+
+
+def compute_bayesian_qirfs_zero_sign(
+    estimation_result: dict,
+    zero_restrictions: dict,
+    sign_restrictions: dict,
+    horizon: int = 20,
+    n_rotations_per_draw: int = 500,
+    max_horizon_check: int = 0,
+    credible_levels: tuple[float, ...] = (0.16, 0.84),
+    seed: int = 42,
+    max_posterior_draws: Optional[int] = None,
+) -> dict:
+    """
+    Compute QIRFs with combined zero and sign restriction identification.
+
+    For each posterior draw:
+    1. Compute Cholesky of co-exceedance matrix
+    2. Build zero-restriction null-space matrices
+    3. Draw Q column-by-column in null spaces (Arias et al. 2018)
+    4. Check sign restrictions on the resulting IRFs
+    5. Store accepted draws
+
+    Parameters
+    ----------
+    estimation_result : Output from BayesianQVAR.estimate().
+    zero_restrictions : Dict with keys (shock, var, horizon), values 0.
+    sign_restrictions : Dict with keys (shock, var, horizon), values +1/-1.
+    horizon : IRF horizon.
+    n_rotations_per_draw : Rotation attempts per posterior draw.
+    max_horizon_check : Max horizon for sign restriction checks.
+    credible_levels : Quantiles for credible bands.
+    seed : Random seed.
+    max_posterior_draws : Limit posterior draws used (for speed).
+
+    Returns
+    -------
+    Dict with median QIRFs, bands, and accepted draws per shock.
+    """
+    rng = np.random.default_rng(seed)
+    beta_draws = estimation_result["beta_draws"]
+    residual_draws = estimation_result["residual_draws"]
+    tau = estimation_result["tau"]
+    k = estimation_result["k"]
+    lags = estimation_result["lags"]
+    n_draws = estimation_result["n_draws"]
+    n_reg = estimation_result.get("n_regressors", beta_draws.shape[1] // k)
+
+    if max_posterior_draws is not None:
+        n_draws = min(n_draws, max_posterior_draws)
+
+    max_h = max(
+        (h for (_, _, h) in {**zero_restrictions, **sign_restrictions}.keys()),
+        default=0,
+    )
+    max_h = max(max_h, max_horizon_check, horizon)
+
+    all_accepted = []
+
+    for i in range(n_draws):
+        B_tau = beta_draws[i].reshape(n_reg, k)
+        B_lag = B_tau[1:, :].T
+        companion = np.zeros((k * lags, k * lags))
+        companion[:k, :] = B_lag
+        if lags > 1:
+            companion[k:, :k * (lags - 1)] = np.eye(k * (lags - 1))
+
+        residuals = residual_draws[i]
+        try:
+            id_result = cholesky_identification(residuals, tau)
+            P_tau = id_result["P_tau"]
+        except (np.linalg.LinAlgError, ValueError):
+            continue
+
+        Z_matrices = _build_zero_restriction_matrices(
+            zero_restrictions, k, P_tau, companion)
+
+        for _ in range(n_rotations_per_draw):
+            Q = draw_orthogonal_matrix_with_zeros(k, Z_matrices, rng)
+            if Q is None:
+                continue
+
+            A0 = P_tau @ Q
+            irfs = _compute_irfs_for_rotation(A0, companion, k, max_h)
+
+            # Verify zeros
+            zeros_ok = True
+            for (s_idx, v_idx, h_z), _ in zero_restrictions.items():
+                if h_z < irfs.shape[0] and abs(irfs[h_z, v_idx, s_idx]) > 1e-8:
+                    zeros_ok = False
+                    break
+            if not zeros_ok:
+                continue
+
+            if check_sign_restrictions(irfs, sign_restrictions, max_h):
+                # Trim to requested horizon
+                all_accepted.append(irfs[:horizon + 1])
+
+    n_accepted = len(all_accepted)
+    if n_accepted == 0:
+        raise RuntimeError(
+            "No draws satisfied zero+sign restrictions. "
+            "Consider relaxing restrictions or increasing n_rotations_per_draw."
+        )
+
+    all_accepted = np.array(all_accepted)
+
+    result = {
+        "n_accepted": n_accepted,
+        "n_posterior_draws_used": n_draws,
+        "n_rotations_per_draw": n_rotations_per_draw,
+        "zero_restrictions": zero_restrictions,
+        "sign_restrictions": sign_restrictions,
+        "horizon": horizon,
+        "var_names": estimation_result["var_names"],
+        "shocks": {},
+    }
+
+    for shock_idx in range(k):
+        irfs_this_shock = all_accepted[:, :, :, shock_idx]
         median_irfs = np.median(irfs_this_shock, axis=0)
         bands = {}
         for q in credible_levels:

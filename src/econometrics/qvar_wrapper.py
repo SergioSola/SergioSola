@@ -63,6 +63,7 @@ from .qvar_irf import (
     compute_qirf,
     compute_bayesian_qirfs_cholesky,
     compute_bayesian_qirfs_sign_restrictions,
+    compute_bayesian_qirfs_zero_sign,
     compute_qvar_fevd,
 )
 from .qvar_diagnostics import run_diagnostics, save_results
@@ -258,6 +259,7 @@ class QVARModel:
         lags: int = 2,
         identification: str = "cholesky",
         sign_restrictions: Optional[dict] = None,
+        zero_restrictions: Optional[dict] = None,
     ) -> "QVARModel":
         """
         Configure the QVAR model.
@@ -265,16 +267,14 @@ class QVARModel:
         Parameters
         ----------
         lags : Lag order.
-        identification : "cholesky" or "sign_restrictions".
-        sign_restrictions : For sign restriction identification.
-            Dictionary with keys (shock_idx, response_var_idx, horizon)
+        identification : "cholesky", "sign_restrictions", or
+            "zero_sign_restrictions".
+        sign_restrictions : For sign or zero+sign identification.
+            Dict with keys (shock_idx, response_var_idx, horizon)
             and values +1 or -1.
-
-            Example for 4-variable system [EBP, GDP, CPI, rate]:
-            {
-                (0, 0, 0): +1,   # EBP shock increases EBP on impact
-                (0, 1, 0): -1,   # EBP shock decreases GDP on impact
-            }
+        zero_restrictions : For zero+sign identification.
+            Dict with keys (shock_idx, response_var_idx, horizon)
+            and values 0.
 
         Returns
         -------
@@ -283,11 +283,14 @@ class QVARModel:
         self.lags = lags
         self.identification = identification
         self.sign_restrictions = sign_restrictions
+        self.zero_restrictions = zero_restrictions
         self.configured = True
 
         print(f"Configuration: lags={lags}, identification={identification}")
         if sign_restrictions:
             print(f"  Sign restrictions: {len(sign_restrictions)} constraints")
+        if zero_restrictions:
+            print(f"  Zero restrictions: {len(zero_restrictions)} constraints")
         return self
 
     # ═══════════════════════════════════════════════════════════════════
@@ -413,6 +416,23 @@ class QVARModel:
                 irf_result = compute_bayesian_qirfs_sign_restrictions(
                     est_result,
                     sign_restrictions=self.sign_restrictions,
+                    horizon=horizon,
+                    n_rotations_per_draw=n_rotations,
+                    max_horizon_check=max_horizon_check,
+                    credible_levels=credible_levels,
+                    seed=seed + q_idx + 100,
+                )
+                if verbose:
+                    print(f"  Accepted rotation draws: "
+                          f"{irf_result['n_accepted']}")
+
+            elif self.identification == "zero_sign_restrictions":
+                if self.zero_restrictions is None:
+                    raise ValueError("Zero restrictions not specified.")
+                irf_result = compute_bayesian_qirfs_zero_sign(
+                    est_result,
+                    zero_restrictions=self.zero_restrictions,
+                    sign_restrictions=self.sign_restrictions or {},
                     horizon=horizon,
                     n_rotations_per_draw=n_rotations,
                     max_horizon_check=max_horizon_check,
@@ -558,7 +578,8 @@ class QVARModel:
                     save_path=f"{output_dir}/04_qirf_q{q_tag}.png",
                 )
                 figures[f"qirf_q{q_tag}"] = fig
-            elif self.identification == "sign_restrictions":
+            elif self.identification in ("sign_restrictions",
+                                          "zero_sign_restrictions"):
                 for shock_idx in irf_result.get("shocks", {}).keys():
                     fig = plot_sign_restriction_irfs(
                         irf_result,
